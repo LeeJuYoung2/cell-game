@@ -7,6 +7,10 @@ const MAX_ENERGY = 20;
 const MAX_HAND_SIZE = 10;
 const PLAYER_MAX_HP = 50;
 
+function assetPath(path) {
+  return `${import.meta.env.BASE_URL}${path}`;
+}
+
 const STARTER_DECK = [
   { id: "animal-cell-1", name: "상피세포", type: "세포", lineage: "animal", rarity: "common", cost: 1, attack: 4, block: 0, desc: "피해 4" },
   { id: "animal-cell-2", name: "근육세포", type: "세포", lineage: "animal", rarity: "common", cost: 1, attack: 5, block: 0, desc: "피해 5" },
@@ -35,9 +39,9 @@ const REWARD_CARDS = [
 ];
 
 const ENEMIES = [
-  { name: "흩어진 세포 덩어리", hp: 40, intent: 7, image: "/monster1.png" },
-  { name: "불완전한 조직체", hp: 55, intent: 10, image: "/monster2.png" },
-  { name: "무질서한 기관계", hp: 75, intent: 13, image: "/monster3.png" },
+  { name: "흩어진 세포 덩어리", hp: 40, intent: 7, image: "monster1.png" },
+  { name: "불완전한 조직체", hp: 55, intent: 10, image: "monster2.png" },
+  { name: "무질서한 기관계", hp: 75, intent: 13, image: "monster3.png" },
 ];
 
 const BIO_ORDER_BY_LINEAGE = {
@@ -254,11 +258,11 @@ function getCardStyle(card) {
 }
 
 function PlayerAvatar() {
-  return <img className="character-image player-img" src="/player.png" alt="플레이어" />;
+  return <img className="character-image player-img" src={assetPath("player.png")} alt="플레이어" />;
 }
 
 function EnemyAvatar({ enemy }) {
-  return <img className="character-image enemy-img" src={enemy.image} alt={enemy.name} />;
+  return <img className="character-image enemy-img" src={assetPath(enemy.image)} alt={enemy.name} />;
 }
 
 function PlayCard({ card, selected, order, onClick, fanIndex = 0, fanTotal = 1, reward = false }) {
@@ -537,8 +541,8 @@ export default function BioSpireLite() {
         html, body, #root { width:100%; height:100%; margin:0; overflow:hidden; background:#030403; }
         body { margin:0; background:#030403; }
         .game { position:fixed; inset:0; width:100vw; height:100dvh; color:#f7f2df; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#030403; overflow:hidden; }
-        .game::before { content:""; position:fixed; inset:0; background:linear-gradient(to right, rgba(0,0,0,.12), rgba(0,0,0,.45)), url('/forest-bg.png'); background-size:cover; background-position:center; z-index:0; }
-        .game::after { content:""; position:fixed; inset:0; background:linear-gradient(to left, rgba(0,0,0,.15), rgba(0,0,0,.62)), url('/corruption-bg.png'); background-size:cover; background-position:center; clip-path:polygon(50% 0,100% 0,100% 100%,42% 100%); z-index:1; pointer-events:none; }
+        .game::before { content:""; position:fixed; inset:0; background:linear-gradient(to right, rgba(0,0,0,.12), rgba(0,0,0,.45)), url('${assetPath("forest-bg.png")}'); background-size:cover; background-position:center; z-index:0; }
+        .game::after { content:""; position:fixed; inset:0; background:linear-gradient(to left, rgba(0,0,0,.15), rgba(0,0,0,.62)), url('${assetPath("corruption-bg.png")}'); background-size:cover; background-position:center; clip-path:polygon(50% 0,100% 0,100% 100%,42% 100%); z-index:1; pointer-events:none; }
         .start-screen { position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center; padding:24px; background:linear-gradient(90deg, rgba(3,8,4,.78), rgba(15,6,28,.82)); backdrop-filter:blur(3px); }
         .start-panel { width:min(620px, 92vw); text-align:center; padding:34px 30px 30px; border-radius:22px; border:1px solid rgba(255,225,154,.54); background:linear-gradient(180deg, rgba(9,18,12,.9), rgba(8,8,10,.94)); box-shadow:0 26px 70px rgba(0,0,0,.64), inset 0 0 30px rgba(255,231,150,.07); }
         .start-title { margin:0; color:#ffe9a7; font-size:clamp(32px, 4.2vw, 58px); line-height:1.05; font-weight:950; text-shadow:0 4px 12px rgba(0,0,0,.8), 0 0 24px rgba(255,206,92,.28); }
