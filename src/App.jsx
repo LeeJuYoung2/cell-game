@@ -433,6 +433,12 @@ function TutorialDemoScreen() {
     { cost: 3, name: "나무", icon: "🌿", type: "개체", sub: "개체", effects: "⚔ 11" },
   ];
 
+  const demoPlayCards = demoCards.map((_, index) => {
+    const demoIds = ["animal-cell-2", "animal-cell-1", "animal-tissue-1", "animal-organ-1", "plant-body-1"];
+    const sourceCard = STARTER_DECK.find((card) => card.id === demoIds[index]) || STARTER_DECK[index];
+    return withUid(sourceCard, index);
+  });
+
   return (
     <div className="tutorial-demo-screen" aria-hidden="true">
       <div className="tutorial-demo-rift" />
@@ -468,16 +474,16 @@ function TutorialDemoScreen() {
         <p>덱 8</p>
       </div>
       <div className="tutorial-demo-cards">
-        {demoCards.map((card, index) => (
-          <div className={`tutorial-demo-card card-${index + 1}`} key={card.name}>
-            {index > 0 && index < 4 && <mark>{index}</mark>}
-            <b>{card.cost}</b>
-            <strong>{card.name}</strong>
-            <span>{card.icon}</span>
-            <em>{card.type}</em>
-            <em>{card.sub}</em>
-            <small>{card.effects}</small>
-          </div>
+        {demoPlayCards.map((card, index) => (
+          <PlayCard
+            key={card.uid}
+            card={card}
+            selected={index > 0 && index < 4}
+            order={index > 0 && index < 4 ? index : null}
+            fanIndex={index}
+            fanTotal={demoPlayCards.length}
+            onClick={() => {}}
+          />
         ))}
       </div>
       <div className="tutorial-demo-actions">
@@ -934,7 +940,12 @@ export default function BioSpireLite() {
         .tutorial-demo-energy small { font-size:18px; }
         .tutorial-demo-energy span { display:block; font-size:18px; }
         .tutorial-demo-energy p { width:100%; margin:0; padding:9px 8px; border-radius:8px; background:rgba(0,0,0,.7); border:1px solid rgba(255,231,150,.24); text-align:center; font-size:16px; }
-        .tutorial-demo-cards { position:absolute; z-index:4; left:50%; bottom:10px; transform:translateX(-50%); width:780px; height:210px; display:flex; align-items:flex-end; justify-content:center; }
+        .tutorial-demo-cards { position:absolute; z-index:4; left:50%; bottom:10px; transform:translateX(-50%); width:780px; height:220px; display:flex; align-items:flex-end; justify-content:center; pointer-events:none; }
+        .tutorial-demo-cards .play-card { width:128px; height:178px; flex-basis:128px; }
+        .tutorial-demo-cards .card-art { height:58px; }
+        .tutorial-demo-cards .effects { gap:4px; font-size:13px; flex-wrap:wrap; line-height:1.05; margin-top:7px; }
+        .tutorial-demo-cards .card-top strong { font-size:15px; }
+        .tutorial-demo-cards .card-type { font-size:12px; }
         .tutorial-demo-card { position:relative; width:134px; height:178px; margin-left:-10px; padding:13px 9px 10px; border-radius:16px; border:2px solid rgba(255,231,144,.5); background:linear-gradient(160deg, rgba(26,82,106,.94), rgba(5,9,9,.96)); color:#fff4cf; text-align:center; font-weight:950; box-shadow:0 0 20px rgba(255,231,144,.18); transform:rotate(var(--rot)); }
         .tutorial-demo-card:first-child { margin-left:0; }
         .tutorial-demo-card.card-1 { --rot:-10deg; }
