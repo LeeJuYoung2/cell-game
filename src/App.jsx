@@ -6,6 +6,7 @@ const TURN_ENERGY_GAIN = 5;
 const MAX_ENERGY = 20;
 const MAX_HAND_SIZE = 10;
 const PLAYER_MAX_HP = 50;
+const HARD_MODE_INTENT_MULTIPLIER = 1.5;
 
 function assetPath(path) {
   return `${import.meta.env.BASE_URL}${path}`;
@@ -73,6 +74,12 @@ function withUid(card, index = 0) {
   return { ...card, uid: `${card.id}-${Date.now()}-${index}-${Math.random().toString(16).slice(2)}` };
 }
 
+function withoutUid(card) {
+  const baseCard = { ...card };
+  delete baseCard.uid;
+  return baseCard;
+}
+
 function shuffle(cards) {
   return [...cards].sort(() => Math.random() - 0.5).map((card, index) => withUid(card, index));
 }
@@ -128,6 +135,30 @@ function sortCardsByRarity(cards) {
 
 function trimHand(cards) {
   return sortCardsByRarity(cards).slice(0, MAX_HAND_SIZE);
+}
+
+function getCardPool(...cardGroups) {
+  return cardGroups.flat().map(withoutUid);
+}
+
+function startBattleFromPool(cardPool, handSize = STARTING_HAND_SIZE) {
+  const shuffledDeck = shuffle(cardPool);
+  const drawResult = drawCards(shuffledDeck, [], handSize);
+  return {
+    hand: sortCardsByRarity(drawResult.drawn),
+    deck: drawResult.deck,
+    discard: drawResult.discard,
+  };
+}
+
+function summarizeCards(cards) {
+  const summary = new Map();
+  for (const card of cards) {
+    const current = summary.get(card.id);
+    if (current) current.count += 1;
+    else summary.set(card.id, { ...withoutUid(card), count: 1 });
+  }
+  return sortCardsByRarity([...summary.values()]);
 }
 
 function splitLineageRuns(cards) {
@@ -325,6 +356,48 @@ function SelectedComboBar({ selected, comboResult, selectedCost }) {
   );
 }
 
+function CardLibraryModal({ cards, onClose }) {
+  return (
+    <div className="modal-bg">
+      <div className="modal card-library-modal">
+        <h2>내 카드</h2>
+        <div className="card-library">
+          {cards.map((card) => (
+            <div className="library-card" key={card.id} style={getCardStyle(card)}>
+              <div className="library-card-main">
+                <strong>{card.name}</strong>
+                <span>{LINEAGE_LABEL[card.lineage]} · {card.type}</span>
+              </div>
+              <CardEffects card={card} />
+              <em>x{card.count}</em>
+            </div>
+          ))}
+        </div>
+        <div className="center"><button className="button" onClick={onClose}>닫기</button></div>
+      </div>
+    </div>
+  );
+}
+
+function TutorialModal({ onClose }) {
+  return (
+    <div className="modal-bg">
+      <div className="modal tutorial-modal">
+        <h2>게임 방법</h2>
+        <div className="tutorial-grid">
+          <div><strong>아래 카드</strong><span>카드를 원하는 순서대로 눌러 콤보를 예약합니다.</span></div>
+          <div><strong>중앙 콤보</strong><span>세포 → 조직 → 기관 순서가 맞으면 피해가 커집니다.</span></div>
+          <div><strong>왼쪽 아래</strong><span>현재 에너지와 남은 덱 수를 확인합니다.</span></div>
+          <div><strong>오른쪽 버튼</strong><span>카드 발동, 턴 종료, 내 카드 확인, 처음부터를 사용할 수 있습니다.</span></div>
+          <div><strong>위쪽 체력</strong><span>플레이어와 적의 체력, 방어도, 적의 다음 공격을 확인합니다.</span></div>
+          <div><strong>하드 모드</strong><span>노말 적 3마리를 모두 잡으면 강화된 적이 다시 등장합니다.</span></div>
+        </div>
+        <div className="center"><button className="button" onClick={onClose}>확인</button></div>
+      </div>
+    </div>
+  );
+}
+
 function HpBar({ current, max, align = "left" }) {
   return (
     <div className={`hud-row ${align}`}>
@@ -368,15 +441,25 @@ export default function BioSpireLite() {
   const [turnWarning, setTurnWarning] = useState(null);
   const [skipConfirm, setSkipConfirm] = useState(false);
   const [restartConfirm, setRestartConfirm] = useState(false);
+  const [cardListOpen, setCardListOpen] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [hardMode, setHardMode] = useState(false);
+  const [hardModeStartPool, setHardModeStartPool] = useState(null);
   const [toast, setToast] = useState(null);
   const [started, setStarted] = useState(false);
   const [attackFx, setAttackFx] = useState(null);
 
-  const enemy = ENEMIES[enemyIndex];
+  const baseEnemy = ENEMIES[enemyIndex];
+  const enemy = {
+    ...baseEnemy,
+    name: hardMode ? `강화 ${baseEnemy.name}` : baseEnemy.name,
+    intent: hardMode ? Math.ceil(baseEnemy.intent * HARD_MODE_INTENT_MULTIPLIER) : baseEnemy.intent,
+  };
   const comboResult = calculateComboDamage(selected);
   const comboLength = comboResult.bestLength;
   const selectedCost = selected.reduce((sum, card) => sum + (card.cost || 0), 0);
   const visibleHand = hand;
+  const ownedCards = summarizeCards([...hand, ...deck, ...discard]);
 
   function showToast(message) {
     setToast(message);
@@ -394,7 +477,7 @@ export default function BioSpireLite() {
   }
 
   function selectCard(card) {
-    if (gameOver || rewardMode) return;
+    if (gameOver || rewardMode || tutorialOpen) return;
     if (isSelected(card)) setSelected((previous) => previous.filter((selectedCard) => selectedCard.uid !== card.uid));
     else setSelected((previous) => [...previous, card]);
   }
@@ -404,7 +487,39 @@ export default function BioSpireLite() {
     return index >= 0 ? index + 1 : null;
   }
 
+  function beginHardMode(cardPool) {
+    const savedPool = cardPool.map(withoutUid);
+    const battleStart = startBattleFromPool(savedPool);
+    setHardMode(true);
+    setHardModeStartPool(savedPool);
+    setEnemyIndex(0);
+    setEnemyHp(ENEMIES[0].hp);
+    setEnergy(TURN_ENERGY_GAIN);
+    setPlayerHp(PLAYER_MAX_HP);
+    setBlock(0);
+    setRewardMode(false);
+    setRewards([]);
+    setSelected([]);
+    setHand(battleStart.hand);
+    setDeck(battleStart.deck);
+    setDiscard(battleStart.discard);
+    setTurnWarning(null);
+    setSkipConfirm(false);
+    setRestartConfirm(false);
+    setCardListOpen(false);
+    setGameOver(false);
+    setWin(false);
+    setAttackFx(null);
+    setLog("하드 모드가 시작됩니다. 강화된 적의 공격력이 상승합니다.");
+  }
+
+  function retryHardMode() {
+    if (!hardModeStartPool) return;
+    beginHardMode(hardModeStartPool);
+  }
+
   function enemyAttackAndDraw(messagePrefix, force = false) {
+    if (tutorialOpen) return;
     const warning = getTurnOverflowWarning(energy, hand.length);
     if (!force && warning) {
       setTurnWarning({ message: warning });
@@ -435,12 +550,12 @@ export default function BioSpireLite() {
     setLog(nextLog);
     if (nextPlayerHp <= 0) {
       setGameOver(true);
-      setLog("패배했습니다. 다시 도전해보세요.");
+      setLog(hardMode ? "하드 모드에서 쓰러졌습니다." : "패배했습니다. 다시 도전해보세요.");
     }
   }
 
   function playSelectedCards() {
-    if (gameOver || rewardMode) return;
+    if (gameOver || rewardMode || tutorialOpen) return;
     if (selected.length === 0) {
       setLog("발동할 카드를 먼저 선택하세요. 카드를 사용하지 않으려면 턴 종료를 누르세요.");
       return;
@@ -479,9 +594,13 @@ export default function BioSpireLite() {
     setLog(nextLog);
     if (nextEnemyHp <= 0) {
       if (enemyIndex === ENEMIES.length - 1) {
-        setWin(true);
-        setGameOver(true);
-        setLog("승리! 생명체 구성 순서를 활용해 모든 적을 물리쳤습니다.");
+        if (hardMode) {
+          setWin(true);
+          setGameOver(true);
+          setLog("승리! 강화된 적까지 모두 물리쳤습니다.");
+        } else {
+          beginHardMode(getCardPool(nextDeck, nextDiscard, nextHand));
+        }
       } else {
         setRewards(pickWeightedRewardCards(3));
         setRewardMode(true);
@@ -491,10 +610,10 @@ export default function BioSpireLite() {
   }
 
   function pickReward(card) {
-    const rewardCard = withUid(card);
+    const rewardCard = withoutUid(card);
     const nextEnemyIndex = enemyIndex + 1;
-    const nextDeckPool = [...discard, ...hand, rewardCard];
-    const drawResult = drawCards(deck, nextDeckPool, STARTING_HAND_SIZE);
+    const nextDeckPool = getCardPool(deck, discard, hand, [rewardCard]);
+    const battleStart = startBattleFromPool(nextDeckPool);
     setEnemyIndex(nextEnemyIndex);
     setEnemyHp(ENEMIES[nextEnemyIndex].hp);
     setEnergy(TURN_ENERGY_GAIN);
@@ -502,9 +621,9 @@ export default function BioSpireLite() {
     setRewardMode(false);
     setRewards([]);
     setSelected([]);
-    setHand(sortCardsByRarity(drawResult.drawn));
-    setDeck(drawResult.deck);
-    setDiscard(drawResult.discard);
+    setHand(battleStart.hand);
+    setDeck(battleStart.deck);
+    setDiscard(battleStart.discard);
     setTurnWarning(null);
     setSkipConfirm(false);
     setLog(`${card.name} 카드를 덱에 추가했습니다. 다음 전투를 카드 5장으로 시작합니다.`);
@@ -526,6 +645,10 @@ export default function BioSpireLite() {
     setTurnWarning(null);
     setSkipConfirm(false);
     setRestartConfirm(false);
+    setCardListOpen(false);
+    setTutorialOpen(true);
+    setHardMode(false);
+    setHardModeStartPool(null);
     setRewardMode(false);
     setRewards([]);
     setGameOver(false);
@@ -644,6 +767,19 @@ export default function BioSpireLite() {
         .modal h2 { margin:0; text-align:center; color:#ffe9a7; font-size:32px; }
         .reward-grid { display:flex; justify-content:center; gap:18px; margin-top:22px; flex-wrap:wrap; }
         .reward-card { margin-left:0; transform:none; }
+        .card-library-modal { max-width:760px; }
+        .card-library { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px; max-height:min(56dvh, 460px); overflow:auto; margin-top:20px; padding-right:4px; }
+        .library-card { display:grid; grid-template-columns:minmax(0, 1fr) auto auto; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,231,150,.28); background:linear-gradient(135deg, var(--card-deep), rgba(0,0,0,.72)); box-shadow:0 0 12px var(--card-glow); }
+        .library-card-main { min-width:0; display:grid; gap:3px; }
+        .library-card-main strong { color:#fff7dc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; }
+        .library-card-main span { color:#d7c78e; font-size:12px; font-weight:850; }
+        .library-card .effects { margin-top:0; justify-content:flex-start; white-space:nowrap; }
+        .library-card em { font-style:normal; color:#ffe9a7; font-weight:950; }
+        .tutorial-modal { max-width:780px; }
+        .tutorial-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; margin-top:22px; }
+        .tutorial-grid div { padding:13px 14px; border-radius:12px; border:1px solid rgba(255,231,150,.26); background:rgba(0,0,0,.34); }
+        .tutorial-grid strong { display:block; margin-bottom:6px; color:#ffe9a7; font-size:16px; font-weight:950; }
+        .tutorial-grid span { display:block; color:#f2e6c9; font-size:14px; line-height:1.45; font-weight:800; }
         .confirm-message, .warning-message { color:#f2e6c9; font-size:17px; text-align:center; line-height:1.6; }
         .warning-message { color:#ffb6b6; font-weight:900; }
         .center { display:flex; justify-content:center; gap:12px; margin-top:18px; }
@@ -712,6 +848,11 @@ export default function BioSpireLite() {
           .button { min-height:34px; padding:6px 7px; border-radius:9px; font-size:12px; }
           .modal { padding:20px 16px; border-radius:18px; }
           .modal h2 { font-size:24px; }
+          .card-library { grid-template-columns:1fr; max-height:48dvh; }
+          .tutorial-grid { grid-template-columns:1fr; gap:8px; }
+          .tutorial-grid div { padding:10px 12px; }
+          .tutorial-grid strong { font-size:14px; }
+          .tutorial-grid span { font-size:12px; }
         }
         @media (max-width:1100px) and (orientation:landscape) {
           .wrap { grid-template-rows:minmax(0, 1fr) clamp(158px, 27dvh, 190px); }
@@ -783,7 +924,7 @@ export default function BioSpireLite() {
         <section className="bottom">
           <div className="energy-panel">
             <div className="energy-orb"><div className="energy-number">{energy}<small>/{MAX_ENERGY}</small></div><div className="energy-label">에너지</div></div>
-            <div className="deck-mini"><span>덱 {deck.length}</span><span>버림 {discard.length}</span></div>
+            <div className="deck-mini"><span>덱 {deck.length}</span></div>
           </div>
           <div className="hand-zone">
             <SelectedComboBar selected={selected} comboResult={comboResult} selectedCost={selectedCost} />
@@ -802,13 +943,16 @@ export default function BioSpireLite() {
             </div>
           </div>
           <div className="action-panel">
-            <button className="button" onClick={playSelectedCards} disabled={gameOver || rewardMode}>카드 발동</button>
-            <button className="button danger" onClick={() => setSkipConfirm(true)} disabled={gameOver || rewardMode}>턴 종료</button>
-            <button className="button secondary" onClick={() => setSelected([])} disabled={gameOver || rewardMode}>예약 취소</button>
+            <button className="button" onClick={playSelectedCards} disabled={gameOver || rewardMode || tutorialOpen}>카드 발동</button>
+            <button className="button danger" onClick={() => setSkipConfirm(true)} disabled={gameOver || rewardMode || tutorialOpen}>턴 종료</button>
+            <button className="button secondary" onClick={() => setCardListOpen(true)} disabled={tutorialOpen}>내 카드</button>
             <button className="button secondary restart-button" onClick={() => setRestartConfirm(true)}>처음부터</button>
           </div>
         </section>
       </div>
+
+      {tutorialOpen && started && <TutorialModal onClose={() => setTutorialOpen(false)} />}
+      {cardListOpen && <CardLibraryModal cards={ownedCards} onClose={() => setCardListOpen(false)} />}
 
       {rewardMode && (
         <div className="modal-bg"><div className="modal"><h2>보상 카드 선택</h2><div className="reward-grid">
@@ -828,8 +972,12 @@ export default function BioSpireLite() {
         <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>처음부터 다시 시작할까요?</h2><p className="confirm-message">현재 전투와 보상 진행이 초기화되고, 시작 덱을 새로 섞어 다시 시작합니다.</p><div className="center"><button className="button danger" onClick={resetGame}>다시 시작</button><button className="button secondary" onClick={() => setRestartConfirm(false)}>취소</button></div></div></div>
       )}
 
-      {gameOver && (
-        <div className="modal-bg"><div className="modal" style={{ maxWidth: 520, textAlign: "center" }}><div style={{ fontSize: 54 }}>{win ? "🏆" : "🧬"}</div><h2>{win ? "승리!" : "패배"}</h2><p className="confirm-message">{win ? "생명체 구성 순서를 활용해 적을 물리쳤습니다." : "다시 도전해보세요."}</p><button className="button" onClick={resetGame}>다시 도전</button></div></div>
+      {gameOver && hardMode && !win && (
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 560, textAlign: "center" }}><div style={{ fontSize: 54 }}>🧬</div><h2>강화 단계에서 쓰러졌습니다</h2><p className="confirm-message">생명체 구성은 완성됐지만, 강화된 적의 공격을 버티지 못했습니다. 현재 덱으로 하드 모드에 다시 도전하시겠습니까?</p><div className="center"><button className="button" onClick={retryHardMode}>하드 모드 재도전</button><button className="button secondary" onClick={resetGame}>처음부터</button></div></div></div>
+      )}
+
+      {gameOver && (!hardMode || win) && (
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 520, textAlign: "center" }}><div style={{ fontSize: 54 }}>{win ? "🏆" : "🧬"}</div><h2>{win ? "최종 승리!" : "패배"}</h2><p className="confirm-message">{win ? "노말 모드와 하드 모드를 모두 돌파했습니다." : "다시 도전해보세요."}</p><button className="button" onClick={resetGame}>{win ? "처음부터" : "다시 도전"}</button></div></div>
       )}
     </div>
   );
