@@ -384,37 +384,43 @@ const TUTORIAL_STEPS = [
     target: "player",
     title: "플레이어 정보",
     body: "현재 체력과 방어도를 확인합니다. 체력이 0이 되면 패배합니다.",
-    position: "tutorial-player",
+    position: "tutorial-player-note",
+    spotlight: "spotlight-player",
   },
   {
     target: "energy",
     title: "에너지와 덱",
     body: "카드를 발동하려면 에너지가 필요합니다. 덱 숫자는 앞으로 뽑을 수 있는 카드 수입니다.",
-    position: "tutorial-energy",
+    position: "tutorial-energy-note",
+    spotlight: "spotlight-energy",
   },
   {
     target: "hand",
     title: "카드 선택",
     body: "손패 카드를 누르면 순서대로 예약됩니다. 선택한 카드를 다시 누르면 선택이 해제됩니다.",
-    position: "tutorial-hand",
+    position: "tutorial-hand-note",
+    spotlight: "spotlight-hand",
   },
   {
     target: "combo",
     title: "콤보 표시",
     body: "동물과 식물 카드를 구성 단계 순서대로 연결하면 콤보 피해가 증가합니다.",
-    position: "tutorial-combo",
+    position: "tutorial-combo-note",
+    spotlight: "spotlight-combo",
   },
   {
     target: "actions",
     title: "행동 버튼",
     body: "카드 발동으로 공격하고, 턴 종료로 적의 공격을 받습니다. 내 카드 버튼으로 보유 카드를 확인합니다.",
-    position: "tutorial-actions",
+    position: "tutorial-actions-note",
+    spotlight: "spotlight-actions",
   },
   {
     target: "enemy",
     title: "적 정보",
     body: "적의 체력과 다음 공격력을 확인합니다. 노말 적 3마리를 잡으면 하드 모드가 시작됩니다.",
-    position: "tutorial-enemy",
+    position: "tutorial-enemy-note",
+    spotlight: "spotlight-enemy",
   },
 ];
 
@@ -424,6 +430,7 @@ function TutorialModal({ step, onNext, onPrev, onClose }) {
   return (
     <div className="tutorial-overlay">
       <div className="tutorial-shade" />
+      <div className={`tutorial-spotlight ${current.spotlight}`} />
       <div className={`tutorial-callout ${current.position}`}>
         <b>{step + 1}</b>
         <strong>{current.title}</strong>
@@ -827,25 +834,32 @@ export default function BioSpireLite() {
         .library-card-main span { color:#d7c78e; font-size:12px; font-weight:850; }
         .library-card .effects { margin-top:0; justify-content:flex-start; white-space:nowrap; }
         .library-card em { font-style:normal; color:#ffe9a7; font-weight:950; }
-        .tutorial-focus { position:relative; z-index:120 !important; filter:brightness(1.16) saturate(1.08); box-shadow:0 0 0 3px rgba(255,218,96,.9), 0 0 28px rgba(255,218,96,.58) !important; border-radius:14px; }
+        .tutorial-focus { position:relative; }
         .tutorial-overlay { position:fixed; inset:0; z-index:110; pointer-events:auto; }
-        .tutorial-shade { position:absolute; inset:0; background:rgba(0,0,0,.58); backdrop-filter:blur(1px); }
-        .tutorial-callout { position:absolute; z-index:130; width:clamp(220px, 24vw, 330px); padding:14px 14px 14px 42px; border-radius:12px; background:rgba(6,8,10,.92); border:2px solid #ffd45f; color:#f7edcf; box-shadow:0 0 18px rgba(0,0,0,.55); font-weight:850; }
+        .tutorial-shade { position:absolute; inset:0; background:transparent; }
+        .tutorial-spotlight { position:absolute; z-index:120; border:3px solid #ffe06c; border-radius:16px; background:rgba(255,239,128,.04); box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(255,224,108,.78), inset 0 0 18px rgba(255,224,108,.18); pointer-events:none; }
+        .tutorial-callout { position:absolute; z-index:130; width:clamp(230px, 23vw, 340px); padding:14px 14px 14px 42px; border-radius:12px; background:rgba(6,8,10,.94); border:2px solid #ffd45f; color:#f7edcf; box-shadow:0 0 18px rgba(0,0,0,.55); font-weight:850; }
         .tutorial-callout b { position:absolute; left:-12px; top:-12px; width:30px; height:30px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:#ffdb69; color:#1e1503; border:2px solid rgba(255,255,255,.8); font-size:17px; font-weight:950; }
         .tutorial-callout strong { display:block; margin-bottom:5px; color:#ffe98d; font-size:15px; font-weight:950; }
         .tutorial-callout span { display:block; color:#f2e6c9; font-size:12px; line-height:1.45; }
         .tutorial-controls { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
         .tutorial-controls .button { min-height:32px; padding:6px 12px; font-size:12px; border-radius:9px; }
-        .tutorial-player { left:24px; top:24px; }
-        .tutorial-energy { left:28px; bottom:148px; }
-        .tutorial-hand { left:38%; bottom:118px; transform:translateX(-50%); border-color:#4fa3ff; }
-        .tutorial-hand b { background:#67b6ff; }
-        .tutorial-combo { left:50%; top:40%; transform:translate(-50%, -50%); border-color:#c87bff; }
-        .tutorial-combo b { background:#c88dff; }
-        .tutorial-actions { right:24px; bottom:120px; border-color:#7ed957; }
-        .tutorial-actions b { background:#8ee65d; }
-        .tutorial-enemy { right:30px; top:24px; border-color:#c87bff; }
-        .tutorial-enemy b { background:#c88dff; }
+        .spotlight-player { left:34px; top:28px; width:min(380px, 33vw); height:126px; }
+        .spotlight-energy { left:28px; bottom:34px; width:154px; height:220px; }
+        .spotlight-hand { left:50%; bottom:18px; transform:translateX(-50%); width:min(900px, 66vw); height:196px; border-color:#6bb8ff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(91,198,255,.72), inset 0 0 18px rgba(91,198,255,.16); }
+        .spotlight-combo { left:50%; bottom:220px; transform:translateX(-50%); width:min(780px, 58vw); height:132px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
+        .spotlight-actions { right:18px; bottom:24px; width:214px; height:282px; border-color:#8ee65d; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(126,217,87,.72), inset 0 0 18px rgba(126,217,87,.16); }
+        .spotlight-enemy { right:34px; top:28px; width:min(410px, 34vw); height:118px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
+        .tutorial-player-note { left:calc(34px + min(380px, 33vw) + 18px); top:30px; }
+        .tutorial-energy-note { left:200px; bottom:130px; }
+        .tutorial-hand-note { left:50%; bottom:230px; transform:translateX(-50%); border-color:#4fa3ff; }
+        .tutorial-hand-note b { background:#67b6ff; }
+        .tutorial-combo-note { left:50%; bottom:370px; transform:translateX(-50%); border-color:#c87bff; }
+        .tutorial-combo-note b { background:#c88dff; }
+        .tutorial-actions-note { right:250px; bottom:112px; border-color:#7ed957; }
+        .tutorial-actions-note b { background:#8ee65d; }
+        .tutorial-enemy-note { right:calc(34px + min(410px, 34vw) + 18px); top:30px; border-color:#c87bff; }
+        .tutorial-enemy-note b { background:#c88dff; }
         .confirm-message, .warning-message { color:#f2e6c9; font-size:17px; text-align:center; line-height:1.6; }
         .warning-message { color:#ffb6b6; font-weight:900; }
         .center { display:flex; justify-content:center; gap:12px; margin-top:18px; }
@@ -922,12 +936,19 @@ export default function BioSpireLite() {
           .tutorial-callout span { font-size:10px; line-height:1.3; }
           .tutorial-controls { gap:5px; margin-top:7px; }
           .tutorial-controls .button { min-height:26px; padding:4px 7px; font-size:10px; }
-          .tutorial-player { left:10px; top:10px; }
-          .tutorial-enemy { right:10px; top:10px; }
-          .tutorial-energy { left:10px; bottom:112px; }
-          .tutorial-hand { left:45%; bottom:88px; }
-          .tutorial-combo { top:43%; width:190px; }
-          .tutorial-actions { right:10px; bottom:86px; }
+          .tutorial-spotlight { border-width:2px; border-radius:12px; }
+          .spotlight-player { left:8px; top:8px; width:min(230px, 42vw); height:94px; }
+          .spotlight-enemy { right:8px; top:8px; width:min(230px, 42vw); height:94px; }
+          .spotlight-energy { left:8px; bottom:24px; width:76px; height:156px; }
+          .spotlight-hand { width:min(640px, 66vw); height:124px; bottom:12px; }
+          .spotlight-combo { width:min(420px, 54vw); height:84px; bottom:144px; }
+          .spotlight-actions { right:6px; bottom:18px; width:96px; height:204px; }
+          .tutorial-player-note { left:248px; top:10px; }
+          .tutorial-enemy-note { right:248px; top:10px; }
+          .tutorial-energy-note { left:92px; bottom:88px; }
+          .tutorial-hand-note { left:50%; bottom:144px; }
+          .tutorial-combo-note { left:50%; bottom:238px; width:190px; }
+          .tutorial-actions-note { right:110px; bottom:88px; }
         }
         @media (max-width:1100px) and (orientation:landscape) {
           .wrap { grid-template-rows:minmax(0, 1fr) clamp(158px, 27dvh, 190px); }
