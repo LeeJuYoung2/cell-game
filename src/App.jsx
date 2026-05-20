@@ -424,11 +424,78 @@ const TUTORIAL_STEPS = [
   },
 ];
 
+function TutorialDemoScreen() {
+  const demoCards = [
+    { cost: 1, name: "근육세포", icon: "🧬", type: "세포", sub: "세포", effects: "⚔ 5" },
+    { cost: 1, name: "상피세포", icon: "🧬", type: "세포", sub: "세포", effects: "⚔ 4" },
+    { cost: 1, name: "상피조직", icon: "🧬", type: "조직", sub: "조직", effects: "🛡 6" },
+    { cost: 2, name: "위", icon: "🧬", type: "기관", sub: "기관", effects: "⚔ 7 🛡 3" },
+    { cost: 3, name: "나무", icon: "🌿", type: "개체", sub: "개체", effects: "⚔ 11" },
+  ];
+
+  return (
+    <div className="tutorial-demo-screen" aria-hidden="true">
+      <div className="tutorial-demo-rift" />
+      <div className="tutorial-demo-hud tutorial-demo-player">
+        <strong>플레이어</strong>
+        <div><span>♥</span><i><em style={{ width: "100%" }} /></i><b>50 / 50</b></div>
+        <div><span>🛡</span><i><em style={{ width: "0%" }} /></i><b>0</b></div>
+      </div>
+      <div className="tutorial-demo-hud tutorial-demo-enemy">
+        <strong>흩어진 세포 덩어리</strong>
+        <div><span>♥</span><i><em style={{ width: "100%" }} /></i><b>40 / 40</b></div>
+      </div>
+      <img className="tutorial-demo-avatar tutorial-demo-player-img" src={assetPath("player.png")} alt="" />
+      <img className="tutorial-demo-avatar tutorial-demo-enemy-img" src={assetPath("monster1.png")} alt="" />
+      <div className="tutorial-demo-vs">VS</div>
+      <div className="tutorial-demo-intent">공격 7</div>
+
+      <div className="tutorial-demo-combo">
+        <strong>동물 3콤보 적용 중</strong>
+        <div className="tutorial-demo-combo-row">
+          <span><b>1</b> 상피세포 <small>세포</small> 🧬</span>
+          <i>→</i>
+          <span><b>2</b> 상피조직 <small>조직</small> 🧬</span>
+          <i>→</i>
+          <span><b>3</b> 위 <small>기관</small> 🧬</span>
+        </div>
+        <div className="tutorial-demo-combo-summary">예상 피해 <em>17</em> 비용 <em>4</em></div>
+      </div>
+
+      <div className="tutorial-demo-energy">
+        <button>?</button>
+        <div><strong>5<small>/20</small></strong><span>에너지</span></div>
+        <p>덱 8</p>
+      </div>
+      <div className="tutorial-demo-cards">
+        {demoCards.map((card, index) => (
+          <div className={`tutorial-demo-card card-${index + 1}`} key={card.name}>
+            {index > 0 && index < 4 && <mark>{index}</mark>}
+            <b>{card.cost}</b>
+            <strong>{card.name}</strong>
+            <span>{card.icon}</span>
+            <em>{card.type}</em>
+            <em>{card.sub}</em>
+            <small>{card.effects}</small>
+          </div>
+        ))}
+      </div>
+      <div className="tutorial-demo-actions">
+        <button>카드 발동</button>
+        <button>턴 종료</button>
+        <button>내 카드</button>
+        <button>처음부터</button>
+      </div>
+    </div>
+  );
+}
+
 function TutorialModal({ step, onNext, onPrev, onClose }) {
   const current = TUTORIAL_STEPS[step];
   const isLast = step === TUTORIAL_STEPS.length - 1;
   return (
     <div className="tutorial-overlay">
+      <TutorialDemoScreen />
       <div className="tutorial-shade" />
       <div className={`tutorial-spotlight ${current.spotlight}`} />
       <div className={`tutorial-callout ${current.position}`}>
@@ -684,7 +751,7 @@ export default function BioSpireLite() {
     setLog(`${card.name} 카드를 덱에 추가했습니다. 다음 전투를 카드 5장으로 시작합니다.`);
   }
 
-  function resetGame() {
+  function resetGame(showTutorial = false) {
     const freshDeck = shuffle(STARTER_DECK);
     const firstDraw = drawCards(freshDeck, [], STARTING_HAND_SIZE);
     setDeck(firstDraw.deck);
@@ -702,7 +769,7 @@ export default function BioSpireLite() {
     setRestartConfirm(false);
     setCardListOpen(false);
     setTutorialStep(0);
-    setTutorialOpen(true);
+    setTutorialOpen(showTutorial);
     setHardIntroOpen(false);
     setHardMode(false);
     setHardModeStartPool(null);
@@ -834,6 +901,57 @@ export default function BioSpireLite() {
         .library-card-main span { color:#d7c78e; font-size:12px; font-weight:850; }
         .library-card .effects { margin-top:0; justify-content:flex-start; white-space:nowrap; }
         .library-card em { font-style:normal; color:#ffe9a7; font-weight:950; }
+        .tutorial-demo-screen { position:absolute; inset:0; z-index:111; overflow:hidden; background:#030403; }
+        .tutorial-demo-screen::before { content:""; position:absolute; inset:0; background:linear-gradient(to right, rgba(0,0,0,.08), rgba(0,0,0,.33)), url('${assetPath("forest-bg.png")}'); background-size:cover; background-position:center; }
+        .tutorial-demo-screen::after { content:""; position:absolute; inset:0; background:linear-gradient(to left, rgba(0,0,0,.08), rgba(0,0,0,.48)), url('${assetPath("corruption-bg.png")}'); background-size:cover; background-position:center; clip-path:polygon(51% 0,100% 0,100% 100%,45% 100%); }
+        .tutorial-demo-rift { position:absolute; z-index:2; left:47.5%; top:0; width:96px; height:100%; background:linear-gradient(90deg, transparent, rgba(255,232,102,.3), rgba(178,57,255,.24), transparent); transform:skewX(-6deg); }
+        .tutorial-demo-hud { position:absolute; z-index:4; top:18px; width:380px; color:#fff7dc; text-shadow:0 3px 8px rgba(0,0,0,.85); font-weight:950; }
+        .tutorial-demo-hud strong { display:block; font-size:30px; margin-bottom:10px; }
+        .tutorial-demo-hud div { display:grid; grid-template-columns:24px minmax(0, 1fr) 72px; align-items:center; gap:10px; margin:8px 0; font-size:18px; }
+        .tutorial-demo-hud i { height:9px; border-radius:999px; background:rgba(0,0,0,.72); box-shadow:inset 0 0 4px rgba(255,255,255,.25); overflow:hidden; }
+        .tutorial-demo-hud em { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#e92e39,#ffb59d); }
+        .tutorial-demo-player { left:58px; }
+        .tutorial-demo-enemy { right:58px; text-align:right; }
+        .tutorial-demo-enemy div { grid-template-columns:24px minmax(0, 1fr) 86px; }
+        .tutorial-demo-avatar { position:absolute; z-index:3; object-fit:contain; filter:drop-shadow(0 20px 18px rgba(0,0,0,.5)); pointer-events:none; }
+        .tutorial-demo-player-img { left:14.5%; top:22%; width:min(270px, 21vw); height:min(270px, 34dvh); }
+        .tutorial-demo-enemy-img { right:19%; top:24%; width:min(250px, 20vw); height:min(250px, 32dvh); }
+        .tutorial-demo-vs { position:absolute; z-index:4; left:50%; top:35%; transform:translate(-50%, -50%); font-family:Georgia,serif; font-size:76px; font-weight:950; color:#ffd990; text-shadow:0 5px 0 #7b3107, 0 0 20px rgba(255,231,137,.55); }
+        .tutorial-demo-intent { position:absolute; z-index:4; right:16%; top:52%; padding:4px 12px; border-radius:999px; border:1px solid rgba(255,157,157,.5); background:rgba(30,7,18,.74); color:#fff5e2; font-weight:950; }
+        .tutorial-demo-combo { position:absolute; z-index:4; left:50%; bottom:265px; width:min(730px, 56vw); transform:translateX(-50%); padding:14px 18px; border-radius:12px; border:1px solid rgba(255,222,104,.42); background:rgba(5,6,8,.82); color:#fff2cf; text-align:center; box-shadow:0 0 22px rgba(0,0,0,.44); font-weight:950; }
+        .tutorial-demo-combo > strong { display:block; color:#ffe37b; font-size:20px; margin-bottom:10px; }
+        .tutorial-demo-combo-row { display:flex; align-items:center; justify-content:center; gap:12px; }
+        .tutorial-demo-combo-row span { display:flex; align-items:center; gap:7px; min-width:0; padding:7px 12px; border-radius:10px; background:rgba(0,0,0,.56); border:1px solid rgba(147,213,92,.58); font-size:20px; }
+        .tutorial-demo-combo-row b { width:28px; height:28px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(180deg,#6fd4ff,#236fb4); border:2px solid rgba(255,255,255,.78); }
+        .tutorial-demo-combo-row small { color:#e3d59c; font-size:15px; }
+        .tutorial-demo-combo-row i { font-style:normal; font-size:24px; color:#ffe9a7; }
+        .tutorial-demo-combo-summary { margin-top:10px; font-size:22px; }
+        .tutorial-demo-combo-summary em { margin:0 18px 0 8px; color:#9eff6f; font-style:normal; }
+        .tutorial-demo-energy { position:absolute; z-index:4; left:26px; bottom:34px; width:154px; display:grid; gap:8px; justify-items:center; color:#fff7dc; font-weight:950; text-shadow:0 3px 8px rgba(0,0,0,.75); }
+        .tutorial-demo-energy button { width:34px; height:34px; border-radius:999px; border:1px solid rgba(255,225,122,.7); background:rgba(0,0,0,.7); color:#ffe57e; font-size:22px; font-weight:950; }
+        .tutorial-demo-energy div { width:112px; height:112px; border-radius:999px; display:grid; place-items:center; background:radial-gradient(circle at 50% 35%, #9dff55, #1d681f 56%, #071408); border:2px solid rgba(255,235,143,.62); box-shadow:0 0 26px rgba(93,255,74,.42); }
+        .tutorial-demo-energy strong { font-size:40px; line-height:1; }
+        .tutorial-demo-energy small { font-size:18px; }
+        .tutorial-demo-energy span { display:block; font-size:18px; }
+        .tutorial-demo-energy p { width:100%; margin:0; padding:9px 8px; border-radius:8px; background:rgba(0,0,0,.7); border:1px solid rgba(255,231,150,.24); text-align:center; font-size:16px; }
+        .tutorial-demo-cards { position:absolute; z-index:4; left:50%; bottom:10px; transform:translateX(-50%); width:780px; height:210px; display:flex; align-items:flex-end; justify-content:center; }
+        .tutorial-demo-card { position:relative; width:134px; height:178px; margin-left:-10px; padding:13px 9px 10px; border-radius:16px; border:2px solid rgba(255,231,144,.5); background:linear-gradient(160deg, rgba(26,82,106,.94), rgba(5,9,9,.96)); color:#fff4cf; text-align:center; font-weight:950; box-shadow:0 0 20px rgba(255,231,144,.18); transform:rotate(var(--rot)); }
+        .tutorial-demo-card:first-child { margin-left:0; }
+        .tutorial-demo-card.card-1 { --rot:-10deg; }
+        .tutorial-demo-card.card-2 { --rot:-6deg; }
+        .tutorial-demo-card.card-3 { --rot:0deg; border-color:#ffe881; box-shadow:0 0 22px rgba(255,232,129,.55); }
+        .tutorial-demo-card.card-4 { --rot:5deg; border-color:#ffe881; box-shadow:0 0 22px rgba(255,232,129,.55); }
+        .tutorial-demo-card.card-5 { --rot:9deg; background:linear-gradient(160deg, rgba(46,97,31,.94), rgba(6,12,7,.96)); }
+        .tutorial-demo-card b { position:absolute; left:10px; top:9px; width:34px; height:34px; border-radius:999px; display:grid; place-items:center; background:linear-gradient(180deg,#6fd4ff,#236fb4); border:2px solid rgba(255,255,255,.75); font-size:22px; }
+        .tutorial-demo-card strong { display:block; margin:8px 0 14px 34px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:17px; }
+        .tutorial-demo-card span { display:grid; place-items:center; height:54px; margin:8px 0; border-radius:10px; background:radial-gradient(circle, rgba(91,198,255,.35), rgba(0,0,0,.48)); font-size:30px; }
+        .tutorial-demo-card em { display:block; color:#f7e6b2; font-style:normal; font-size:14px; line-height:1.6; }
+        .tutorial-demo-card small { position:absolute; left:0; right:0; bottom:8px; font-size:14px; }
+        .tutorial-demo-card mark { position:absolute; right:-13px; top:-15px; width:34px; height:34px; border-radius:999px; display:grid; place-items:center; background:#ffe985; color:#1b1400; font-size:20px; font-weight:950; z-index:2; }
+        .tutorial-demo-actions { position:absolute; z-index:4; right:34px; bottom:34px; width:225px; display:grid; gap:9px; }
+        .tutorial-demo-actions button { min-height:44px; border-radius:12px; border:1px solid rgba(255,231,150,.54); color:#fff7dc; background:linear-gradient(180deg,#327331,#103816); font-size:18px; font-weight:950; }
+        .tutorial-demo-actions button:nth-child(2) { background:linear-gradient(180deg,#783434,#35100f); }
+        .tutorial-demo-actions button:nth-child(n+3) { background:linear-gradient(180deg,#202832,#07090d); }
         .tutorial-focus { position:relative; }
         .tutorial-overlay { position:fixed; inset:0; z-index:110; pointer-events:auto; }
         .tutorial-shade { position:absolute; inset:0; background:transparent; }
@@ -844,21 +962,21 @@ export default function BioSpireLite() {
         .tutorial-callout span { display:block; color:#f2e6c9; font-size:12px; line-height:1.45; }
         .tutorial-controls { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
         .tutorial-controls .button { min-height:32px; padding:6px 12px; font-size:12px; border-radius:9px; }
-        .spotlight-player { left:34px; top:28px; width:min(380px, 33vw); height:126px; }
-        .spotlight-energy { left:28px; bottom:34px; width:154px; height:220px; }
-        .spotlight-hand { left:50%; bottom:18px; transform:translateX(-50%); width:min(900px, 66vw); height:196px; border-color:#6bb8ff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(91,198,255,.72), inset 0 0 18px rgba(91,198,255,.16); }
-        .spotlight-combo { left:50%; bottom:220px; transform:translateX(-50%); width:min(780px, 58vw); height:132px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
-        .spotlight-actions { right:18px; bottom:24px; width:214px; height:282px; border-color:#8ee65d; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(126,217,87,.72), inset 0 0 18px rgba(126,217,87,.16); }
-        .spotlight-enemy { right:34px; top:28px; width:min(410px, 34vw); height:118px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
-        .tutorial-player-note { left:calc(34px + min(380px, 33vw) + 18px); top:30px; }
-        .tutorial-energy-note { left:200px; bottom:130px; }
-        .tutorial-hand-note { left:50%; bottom:230px; transform:translateX(-50%); border-color:#4fa3ff; }
+        .spotlight-player { left:30px; top:12px; width:410px; height:138px; }
+        .spotlight-energy { left:20px; bottom:30px; width:158px; height:220px; }
+        .spotlight-hand { left:50%; bottom:0; transform:translateX(-50%); width:800px; height:220px; border-color:#6bb8ff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(91,198,255,.72), inset 0 0 18px rgba(91,198,255,.16); }
+        .spotlight-combo { left:50%; bottom:258px; transform:translateX(-50%); width:760px; height:158px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
+        .spotlight-actions { right:28px; bottom:28px; width:238px; height:226px; border-color:#8ee65d; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(126,217,87,.72), inset 0 0 18px rgba(126,217,87,.16); }
+        .spotlight-enemy { right:48px; top:24px; width:388px; height:100px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
+        .tutorial-player-note { left:462px; top:26px; }
+        .tutorial-energy-note { left:194px; bottom:116px; }
+        .tutorial-hand-note { left:50%; bottom:238px; transform:translateX(-50%); border-color:#4fa3ff; }
         .tutorial-hand-note b { background:#67b6ff; }
-        .tutorial-combo-note { left:50%; bottom:370px; transform:translateX(-50%); border-color:#c87bff; }
+        .tutorial-combo-note { left:50%; bottom:432px; transform:translateX(-50%); border-color:#c87bff; }
         .tutorial-combo-note b { background:#c88dff; }
-        .tutorial-actions-note { right:250px; bottom:112px; border-color:#7ed957; }
+        .tutorial-actions-note { right:286px; bottom:78px; border-color:#7ed957; }
         .tutorial-actions-note b { background:#8ee65d; }
-        .tutorial-enemy-note { right:calc(34px + min(410px, 34vw) + 18px); top:30px; border-color:#c87bff; }
+        .tutorial-enemy-note { right:458px; top:26px; border-color:#c87bff; }
         .tutorial-enemy-note b { background:#c88dff; }
         .confirm-message, .warning-message { color:#f2e6c9; font-size:17px; text-align:center; line-height:1.6; }
         .warning-message { color:#ffb6b6; font-weight:900; }
@@ -996,7 +1114,7 @@ export default function BioSpireLite() {
                 <span>동물끼리, 식물끼리 연속해서 선택하면 두 콤보가 함께 적용됩니다.</span>
               </div>
             </div>
-            <button className="start-button" onClick={resetGame}>게임 시작</button>
+            <button className="start-button" onClick={() => resetGame(true)}>게임 시작</button>
           </div>
         </div>
       )}
@@ -1079,15 +1197,15 @@ export default function BioSpireLite() {
       )}
 
       {restartConfirm && !gameOver && (
-        <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>처음부터 다시 시작할까요?</h2><p className="confirm-message">현재 전투와 보상 진행이 초기화되고, 시작 덱을 새로 섞어 다시 시작합니다.</p><div className="center"><button className="button danger" onClick={resetGame}>다시 시작</button><button className="button secondary" onClick={() => setRestartConfirm(false)}>취소</button></div></div></div>
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>처음부터 다시 시작할까요?</h2><p className="confirm-message">현재 전투와 보상 진행이 초기화되고, 시작 덱을 새로 섞어 다시 시작합니다.</p><div className="center"><button className="button danger" onClick={() => resetGame(false)}>다시 시작</button><button className="button secondary" onClick={() => setRestartConfirm(false)}>취소</button></div></div></div>
       )}
 
       {gameOver && hardMode && !win && (
-        <div className="modal-bg"><div className="modal" style={{ maxWidth: 560, textAlign: "center" }}><div style={{ fontSize: 54 }}>🧬</div><h2>강화 단계에서 쓰러졌습니다</h2><p className="confirm-message">생명체 구성은 완성됐지만, 강화된 적의 공격을 버티지 못했습니다. 현재 덱으로 하드 모드에 다시 도전하시겠습니까?</p><div className="center"><button className="button" onClick={retryHardMode}>하드 모드 재도전</button><button className="button secondary" onClick={resetGame}>처음부터</button></div></div></div>
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 560, textAlign: "center" }}><div style={{ fontSize: 54 }}>🧬</div><h2>강화 단계에서 쓰러졌습니다</h2><p className="confirm-message">생명체 구성은 완성됐지만, 강화된 적의 공격을 버티지 못했습니다. 현재 덱으로 하드 모드에 다시 도전하시겠습니까?</p><div className="center"><button className="button" onClick={retryHardMode}>하드 모드 재도전</button><button className="button secondary" onClick={() => resetGame(false)}>처음부터</button></div></div></div>
       )}
 
       {gameOver && (!hardMode || win) && (
-        <div className="modal-bg"><div className="modal" style={{ maxWidth: 520, textAlign: "center" }}><div style={{ fontSize: 54 }}>{win ? "🏆" : "🧬"}</div><h2>{win ? "최종 승리!" : "패배"}</h2><p className="confirm-message">{win ? "노말 모드와 하드 모드를 모두 돌파했습니다." : "다시 도전해보세요."}</p><button className="button" onClick={resetGame}>{win ? "처음부터" : "다시 도전"}</button></div></div>
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 520, textAlign: "center" }}><div style={{ fontSize: 54 }}>{win ? "🏆" : "🧬"}</div><h2>{win ? "최종 승리!" : "패배"}</h2><p className="confirm-message">{win ? "노말 모드와 하드 모드를 모두 돌파했습니다." : "다시 도전해보세요."}</p><button className="button" onClick={() => resetGame(false)}>{win ? "처음부터" : "다시 도전"}</button></div></div>
       )}
     </div>
   );
