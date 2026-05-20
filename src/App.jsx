@@ -369,7 +369,7 @@ function CardLibraryModal({ cards, onClose }) {
                 <span>{LINEAGE_LABEL[card.lineage]} · {card.type}</span>
               </div>
               <CardEffects card={card} />
-              <em>x{card.count}</em>
+              {card.count > 1 && <em>x{card.count}</em>}
             </div>
           ))}
         </div>
@@ -381,19 +381,16 @@ function CardLibraryModal({ cards, onClose }) {
 
 function TutorialModal({ onClose }) {
   return (
-    <div className="modal-bg">
-      <div className="modal tutorial-modal">
-        <h2>게임 방법</h2>
-        <div className="tutorial-grid">
-          <div><strong>아래 카드</strong><span>카드를 원하는 순서대로 눌러 콤보를 예약합니다.</span></div>
-          <div><strong>중앙 콤보</strong><span>세포 → 조직 → 기관 순서가 맞으면 피해가 커집니다.</span></div>
-          <div><strong>왼쪽 아래</strong><span>현재 에너지와 남은 덱 수를 확인합니다.</span></div>
-          <div><strong>오른쪽 버튼</strong><span>카드 발동, 턴 종료, 내 카드 확인, 처음부터를 사용할 수 있습니다.</span></div>
-          <div><strong>위쪽 체력</strong><span>플레이어와 적의 체력, 방어도, 적의 다음 공격을 확인합니다.</span></div>
-          <div><strong>하드 모드</strong><span>노말 적 3마리를 모두 잡으면 강화된 적이 다시 등장합니다.</span></div>
-        </div>
-        <div className="center"><button className="button" onClick={onClose}>확인</button></div>
-      </div>
+    <div className="tutorial-overlay">
+      <div className="tutorial-shade" />
+      <div className="tutorial-callout tutorial-player"><b>1</b><strong>플레이어 정보</strong><span>현재 체력과 방어도를 확인합니다. 체력이 0이 되면 패배합니다.</span></div>
+      <div className="tutorial-callout tutorial-energy"><b>2</b><strong>에너지와 덱</strong><span>카드를 발동하려면 에너지가 필요합니다. 아래 숫자는 남은 덱입니다.</span></div>
+      <div className="tutorial-callout tutorial-hand"><b>3</b><strong>카드 선택</strong><span>손패 카드를 누르면 순서대로 예약됩니다. 선택한 카드를 다시 누르면 해제됩니다.</span></div>
+      <div className="tutorial-callout tutorial-combo"><b>4</b><strong>콤보 표시</strong><span>동물과 식물 카드를 구성 단계 순서대로 연결하면 콤보 피해가 증가합니다.</span></div>
+      <div className="tutorial-callout tutorial-actions"><b>5</b><strong>행동 버튼</strong><span>카드 발동으로 공격하고, 턴 종료로 적의 공격을 받습니다. 내 카드도 확인할 수 있습니다.</span></div>
+      <div className="tutorial-callout tutorial-enemy"><b>6</b><strong>적 정보</strong><span>적의 체력과 다음 공격력을 확인합니다. 하드 모드에서는 공격력이 상승합니다.</span></div>
+      <div className="tutorial-callout tutorial-hard"><b>7</b><strong>하드 모드</strong><span>처음 적 3마리를 모두 잡으면 최종 승리가 아니라 강화된 하드 모드가 시작됩니다.</span></div>
+      <div className="tutorial-confirm"><button className="button" onClick={onClose}>확인</button></div>
     </div>
   );
 }
@@ -443,6 +440,7 @@ export default function BioSpireLite() {
   const [restartConfirm, setRestartConfirm] = useState(false);
   const [cardListOpen, setCardListOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [hardIntroOpen, setHardIntroOpen] = useState(false);
   const [hardMode, setHardMode] = useState(false);
   const [hardModeStartPool, setHardModeStartPool] = useState(null);
   const [toast, setToast] = useState(null);
@@ -477,7 +475,7 @@ export default function BioSpireLite() {
   }
 
   function selectCard(card) {
-    if (gameOver || rewardMode || tutorialOpen) return;
+    if (gameOver || rewardMode || tutorialOpen || hardIntroOpen) return;
     if (isSelected(card)) setSelected((previous) => previous.filter((selectedCard) => selectedCard.uid !== card.uid));
     else setSelected((previous) => [...previous, card]);
   }
@@ -507,6 +505,7 @@ export default function BioSpireLite() {
     setSkipConfirm(false);
     setRestartConfirm(false);
     setCardListOpen(false);
+    setHardIntroOpen(true);
     setGameOver(false);
     setWin(false);
     setAttackFx(null);
@@ -519,7 +518,7 @@ export default function BioSpireLite() {
   }
 
   function enemyAttackAndDraw(messagePrefix, force = false) {
-    if (tutorialOpen) return;
+    if (tutorialOpen || hardIntroOpen) return;
     const warning = getTurnOverflowWarning(energy, hand.length);
     if (!force && warning) {
       setTurnWarning({ message: warning });
@@ -555,7 +554,7 @@ export default function BioSpireLite() {
   }
 
   function playSelectedCards() {
-    if (gameOver || rewardMode || tutorialOpen) return;
+    if (gameOver || rewardMode || tutorialOpen || hardIntroOpen) return;
     if (selected.length === 0) {
       setLog("발동할 카드를 먼저 선택하세요. 카드를 사용하지 않으려면 턴 종료를 누르세요.");
       return;
@@ -647,6 +646,7 @@ export default function BioSpireLite() {
     setRestartConfirm(false);
     setCardListOpen(false);
     setTutorialOpen(true);
+    setHardIntroOpen(false);
     setHardMode(false);
     setHardModeStartPool(null);
     setRewardMode(false);
@@ -718,6 +718,8 @@ export default function BioSpireLite() {
         @keyframes playerHit { 0%{ transform:translate(0,var(--fighter-y)) scale(1); } 20%{ transform:translate(-14px,var(--fighter-y)) scale(1.04); } 42%{ transform:translate(10px,var(--fighter-y)) scale(.98); } 68%{ transform:translate(-6px,var(--fighter-y)) scale(1.02); } 100%{ transform:translate(0,var(--fighter-y)) scale(1); } }
         .bottom { position:relative; z-index:6; display:grid; grid-template-columns:clamp(82px, 8vw, 124px) minmax(0, 1fr) clamp(118px, 12vw, 180px); align-items:end; gap:clamp(6px, .9vw, 14px); padding:0 clamp(10px, 1.6vw, 24px) 30px; background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.35)); overflow:visible; }
         .energy-panel { align-self:end; display:flex; flex-direction:column; gap:6px; align-items:center; }
+        .help-button { width:30px; height:30px; border-radius:999px; border:1px solid rgba(255,231,150,.72); background:rgba(0,0,0,.62); color:#ffe9a7; font-size:18px; font-weight:950; cursor:pointer; touch-action:manipulation; box-shadow:0 0 12px rgba(255,225,120,.22); }
+        .help-button:hover { filter:brightness(1.12); }
         .energy-orb { width:clamp(78px, 7.2vw, 116px); height:clamp(78px, 7.2vw, 116px); border-radius:999px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(circle at 44% 35%, rgba(164,255,91,.95), rgba(32,94,39,.76) 42%, rgba(6,16,8,.95) 73%); border:2px solid rgba(212,190,109,.76); box-shadow:0 0 24px rgba(103,255,82,.48), inset 0 0 22px rgba(255,255,255,.12); font-weight:950; }
         .energy-number { font-size:clamp(24px, 2.4vw, 40px); line-height:1; }
         .energy-number small { font-size:clamp(13px, 1.1vw, 18px); }
@@ -775,11 +777,25 @@ export default function BioSpireLite() {
         .library-card-main span { color:#d7c78e; font-size:12px; font-weight:850; }
         .library-card .effects { margin-top:0; justify-content:flex-start; white-space:nowrap; }
         .library-card em { font-style:normal; color:#ffe9a7; font-weight:950; }
-        .tutorial-modal { max-width:780px; }
-        .tutorial-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; margin-top:22px; }
-        .tutorial-grid div { padding:13px 14px; border-radius:12px; border:1px solid rgba(255,231,150,.26); background:rgba(0,0,0,.34); }
-        .tutorial-grid strong { display:block; margin-bottom:6px; color:#ffe9a7; font-size:16px; font-weight:950; }
-        .tutorial-grid span { display:block; color:#f2e6c9; font-size:14px; line-height:1.45; font-weight:800; }
+        .tutorial-overlay { position:fixed; inset:0; z-index:95; pointer-events:auto; }
+        .tutorial-shade { position:absolute; inset:0; background:rgba(0,0,0,.34); backdrop-filter:blur(1px); }
+        .tutorial-callout { position:absolute; width:clamp(170px, 18vw, 260px); padding:12px 13px 12px 38px; border-radius:12px; background:rgba(6,8,10,.86); border:2px solid #ffd45f; color:#f7edcf; box-shadow:0 0 18px rgba(0,0,0,.55); font-weight:850; }
+        .tutorial-callout b { position:absolute; left:-12px; top:-12px; width:30px; height:30px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:#ffdb69; color:#1e1503; border:2px solid rgba(255,255,255,.8); font-size:17px; font-weight:950; }
+        .tutorial-callout strong { display:block; margin-bottom:5px; color:#ffe98d; font-size:15px; font-weight:950; }
+        .tutorial-callout span { display:block; color:#f2e6c9; font-size:12px; line-height:1.45; }
+        .tutorial-player { left:24px; top:24px; }
+        .tutorial-energy { left:28px; bottom:148px; }
+        .tutorial-hand { left:38%; bottom:118px; transform:translateX(-50%); border-color:#4fa3ff; }
+        .tutorial-hand b { background:#67b6ff; }
+        .tutorial-combo { left:50%; top:40%; transform:translate(-50%, -50%); border-color:#c87bff; }
+        .tutorial-combo b { background:#c88dff; }
+        .tutorial-actions { right:24px; bottom:120px; border-color:#7ed957; }
+        .tutorial-actions b { background:#8ee65d; }
+        .tutorial-enemy { right:30px; top:24px; border-color:#c87bff; }
+        .tutorial-enemy b { background:#c88dff; }
+        .tutorial-hard { right:30px; top:33%; border-color:#ff9b70; }
+        .tutorial-hard b { background:#ffb085; }
+        .tutorial-confirm { position:absolute; left:50%; bottom:28px; transform:translateX(-50%); }
         .confirm-message, .warning-message { color:#f2e6c9; font-size:17px; text-align:center; line-height:1.6; }
         .warning-message { color:#ffb6b6; font-weight:900; }
         .center { display:flex; justify-content:center; gap:12px; margin-top:18px; }
@@ -849,10 +865,19 @@ export default function BioSpireLite() {
           .modal { padding:20px 16px; border-radius:18px; }
           .modal h2 { font-size:24px; }
           .card-library { grid-template-columns:1fr; max-height:48dvh; }
-          .tutorial-grid { grid-template-columns:1fr; gap:8px; }
-          .tutorial-grid div { padding:10px 12px; }
-          .tutorial-grid strong { font-size:14px; }
-          .tutorial-grid span { font-size:12px; }
+          .help-button { width:26px; height:26px; font-size:15px; }
+          .tutorial-callout { width:170px; padding:8px 9px 8px 28px; border-width:1px; }
+          .tutorial-callout b { width:24px; height:24px; font-size:13px; left:-9px; top:-9px; }
+          .tutorial-callout strong { font-size:12px; margin-bottom:3px; }
+          .tutorial-callout span { font-size:10px; line-height:1.3; }
+          .tutorial-player { left:10px; top:10px; }
+          .tutorial-enemy { right:10px; top:10px; }
+          .tutorial-energy { left:10px; bottom:112px; }
+          .tutorial-hand { left:45%; bottom:88px; }
+          .tutorial-combo { top:43%; width:190px; }
+          .tutorial-actions { right:10px; bottom:86px; }
+          .tutorial-hard { right:10px; top:39%; }
+          .tutorial-confirm { bottom:10px; }
         }
         @media (max-width:1100px) and (orientation:landscape) {
           .wrap { grid-template-rows:minmax(0, 1fr) clamp(158px, 27dvh, 190px); }
@@ -923,6 +948,7 @@ export default function BioSpireLite() {
 
         <section className="bottom">
           <div className="energy-panel">
+            <button className="help-button" onClick={() => setTutorialOpen(true)} disabled={!started || rewardMode || gameOver}>?</button>
             <div className="energy-orb"><div className="energy-number">{energy}<small>/{MAX_ENERGY}</small></div><div className="energy-label">에너지</div></div>
             <div className="deck-mini"><span>덱 {deck.length}</span></div>
           </div>
@@ -943,9 +969,9 @@ export default function BioSpireLite() {
             </div>
           </div>
           <div className="action-panel">
-            <button className="button" onClick={playSelectedCards} disabled={gameOver || rewardMode || tutorialOpen}>카드 발동</button>
-            <button className="button danger" onClick={() => setSkipConfirm(true)} disabled={gameOver || rewardMode || tutorialOpen}>턴 종료</button>
-            <button className="button secondary" onClick={() => setCardListOpen(true)} disabled={tutorialOpen}>내 카드</button>
+            <button className="button" onClick={playSelectedCards} disabled={gameOver || rewardMode || tutorialOpen || hardIntroOpen}>카드 발동</button>
+            <button className="button danger" onClick={() => setSkipConfirm(true)} disabled={gameOver || rewardMode || tutorialOpen || hardIntroOpen}>턴 종료</button>
+            <button className="button secondary" onClick={() => setCardListOpen(true)} disabled={tutorialOpen || hardIntroOpen}>내 카드</button>
             <button className="button secondary restart-button" onClick={() => setRestartConfirm(true)}>처음부터</button>
           </div>
         </section>
@@ -953,6 +979,10 @@ export default function BioSpireLite() {
 
       {tutorialOpen && started && <TutorialModal onClose={() => setTutorialOpen(false)} />}
       {cardListOpen && <CardLibraryModal cards={ownedCards} onClose={() => setCardListOpen(false)} />}
+
+      {hardIntroOpen && !gameOver && (
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 600, textAlign: "center" }}><h2>하드 모드 시작</h2><p className="confirm-message">처음 적 3마리를 모두 물리쳤습니다. 이제 같은 적들이 강화되어 다시 등장합니다. 적 공격력이 상승하며, 마지막 강화 보스를 잡아야 최종 승리입니다.</p><div className="center"><button className="button" onClick={() => setHardIntroOpen(false)}>하드 모드 도전</button></div></div></div>
+      )}
 
       {rewardMode && (
         <div className="modal-bg"><div className="modal"><h2>보상 카드 선택</h2><div className="reward-grid">
