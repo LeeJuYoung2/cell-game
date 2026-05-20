@@ -967,7 +967,7 @@ export default function BioSpireLite() {
         .spotlight-hand { left:50%; bottom:0; transform:translateX(-50%); width:800px; height:220px; border-color:#6bb8ff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(91,198,255,.72), inset 0 0 18px rgba(91,198,255,.16); }
         .spotlight-combo { left:50%; bottom:258px; transform:translateX(-50%); width:760px; height:158px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
         .spotlight-actions { right:28px; bottom:28px; width:238px; height:226px; border-color:#8ee65d; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(126,217,87,.72), inset 0 0 18px rgba(126,217,87,.16); }
-        .spotlight-enemy { right:48px; top:24px; width:388px; height:100px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
+        .spotlight-enemy { right:42px; top:10px; width:430px; height:142px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
         .tutorial-player-note { left:462px; top:26px; }
         .tutorial-energy-note { left:194px; bottom:116px; }
         .tutorial-hand-note { left:50%; bottom:238px; transform:translateX(-50%); border-color:#4fa3ff; }
@@ -976,7 +976,7 @@ export default function BioSpireLite() {
         .tutorial-combo-note b { background:#c88dff; }
         .tutorial-actions-note { right:286px; bottom:78px; border-color:#7ed957; }
         .tutorial-actions-note b { background:#8ee65d; }
-        .tutorial-enemy-note { right:458px; top:26px; border-color:#c87bff; }
+        .tutorial-enemy-note { right:492px; top:26px; border-color:#c87bff; }
         .tutorial-enemy-note b { background:#c88dff; }
         .confirm-message, .warning-message { color:#f2e6c9; font-size:17px; text-align:center; line-height:1.6; }
         .warning-message { color:#ffb6b6; font-weight:900; }
