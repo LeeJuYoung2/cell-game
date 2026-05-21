@@ -292,12 +292,12 @@ function CardImageSlot({ card }) {
 
 function CardEffects({ card }) {
   const effects = [
-    card.attack ? { icon: "⚔", text: card.attack } : null,
-    card.block ? { icon: "🛡", text: card.block } : null,
-    card.energy ? { icon: "⚡", text: `+${card.energy}` } : null,
-    card.draw ? { icon: "▣", text: `+${card.draw}` } : null,
+    card.attack ? { icon: "⚔", label: "피해", text: card.attack } : null,
+    card.block ? { icon: "🛡", label: "방어", text: card.block } : null,
+    card.energy ? { icon: "⚡", label: "에너지 회복", text: `+${card.energy}` } : null,
+    card.draw ? { icon: "🃏", label: "카드 드로우", text: `+${card.draw}` } : null,
   ].filter(Boolean);
-  return <div className="effects">{effects.map((effect) => <span key={`${effect.icon}-${effect.text}`}>{effect.icon} {effect.text}</span>)}</div>;
+  return <div className="effects">{effects.map((effect) => <span key={`${effect.icon}-${effect.text}`} title={effect.label} aria-label={`${effect.label} ${effect.text}`}>{effect.icon} {effect.text}</span>)}</div>;
 }
 
 function getCardStyle(card) {
@@ -391,7 +391,12 @@ function CardLibraryModal({ cards, rewardCards, onClose }) {
     ? (activeCards.reduce((sum, card) => sum + card.cost * (card.count || 1), 0) / totalCards).toFixed(1)
     : "0.0";
   const acquiredRewardCount = rewardLibraryCards.filter((card) => card.acquired).length;
+  const visibleFilters = activeCategory === "owned" ? CARD_FILTERS : ["전체"];
   const filteredCards = activeFilter === "전체" ? activeCards : activeCards.filter((card) => card.type === activeFilter);
+  function changeCategory(category) {
+    setActiveCategory(category);
+    setActiveFilter("전체");
+  }
 
   return (
     <div className="modal-bg">
@@ -399,8 +404,8 @@ function CardLibraryModal({ cards, rewardCards, onClose }) {
         <div className="library-header">
           <h2>내 카드</h2>
           <div className="library-tabs">
-            <button className={activeCategory === "owned" ? "active" : ""} onClick={() => setActiveCategory("owned")}>보유 카드</button>
-            <button className={activeCategory === "rewards" ? "active" : ""} onClick={() => setActiveCategory("rewards")}>보상 카드</button>
+            <button className={activeCategory === "owned" ? "active" : ""} onClick={() => changeCategory("owned")}>보유 카드</button>
+            <button className={activeCategory === "rewards" ? "active" : ""} onClick={() => changeCategory("rewards")}>보상 카드</button>
           </div>
         </div>
         <div className="library-layout">
@@ -413,7 +418,7 @@ function CardLibraryModal({ cards, rewardCards, onClose }) {
             {activeCategory === "rewards" && <div className="library-stat"><b>{acquiredRewardCount}/{rewardLibraryCards.length}</b><span>획득</span></div>}
             <div className="library-stat"><b>{averageCost}</b><span>평균 코스트</span></div>
             <div className="library-menu">
-              {CARD_FILTERS.map((filter) => (
+              {visibleFilters.map((filter) => (
                 <button key={filter} className={activeFilter === filter ? "active" : ""} onClick={() => setActiveFilter(filter)}>
                   {filter}
                 </button>
@@ -461,6 +466,13 @@ const TUTORIAL_STEPS = [
     target: "hand",
     title: "카드 선택",
     body: "손패 카드를 누르면 순서대로 예약됩니다. 선택한 카드를 다시 누르면 선택이 해제됩니다.",
+    position: "tutorial-hand-note",
+    spotlight: "spotlight-hand",
+  },
+  {
+    target: "hand",
+    title: "카드 효과",
+    body: "⚔ 피해는 적의 체력을 줄이고, 🛡 방어는 공격을 막습니다. ⚡ 에너지는 사용 후 회복, 🃏 드로우는 카드를 추가로 뽑는 효과입니다.",
     position: "tutorial-hand-note",
     spotlight: "spotlight-hand",
   },
