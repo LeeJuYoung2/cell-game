@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from "react";
 
 const STARTING_HAND_SIZE = 5;
-const TURN_DRAW_COUNT = 2;
-const TURN_ENERGY_GAIN = 5;
+const TURN_DRAW_COUNT = 3;
+const TURN_ENERGY_GAIN = 7;
 const MAX_ENERGY = 20;
-const MAX_HAND_SIZE = 10;
-const PLAYER_MAX_HP = 50;
+const MAX_HAND_SIZE = 12;
+const PLAYER_MAX_HP = 70;
 const HARD_MODE_INTENT_MULTIPLIER = 1.5;
 
 function assetPath(path) {
@@ -519,7 +519,7 @@ function TutorialDemoScreen() {
       <div className="tutorial-demo-rift" />
       <div className="tutorial-demo-hud tutorial-demo-player">
         <strong>플레이어</strong>
-        <div><span>♥</span><i><em style={{ width: "100%" }} /></i><b>50 / 50</b></div>
+        <div><span>♥</span><i><em style={{ width: "100%" }} /></i><b>70 / 70</b></div>
         <div><span>🛡</span><i><em style={{ width: "0%" }} /></i><b>0</b></div>
       </div>
       <div className="tutorial-demo-hud tutorial-demo-enemy">
@@ -1323,7 +1323,7 @@ export default function BioSpireLite() {
       )}
 
       {skipConfirm && !gameOver && (
-        <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>턴을 종료하시겠습니까?</h2><p className="confirm-message">적이 공격하고, 다음 턴에 카드 2장을 드로우합니다.</p><div className="center"><button className="button danger" onClick={() => enemyAttackAndDraw("턴을 넘겼습니다.")}>종료</button><button className="button secondary" onClick={() => setSkipConfirm(false)}>취소</button></div></div></div>
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>턴을 종료하시겠습니까?</h2><p className="confirm-message">적이 공격하고, 다음 턴에 카드 {TURN_DRAW_COUNT}장을 드로우합니다.</p><div className="center"><button className="button danger" onClick={() => enemyAttackAndDraw("턴을 넘겼습니다.")}>종료</button><button className="button secondary" onClick={() => setSkipConfirm(false)}>취소</button></div></div></div>
       )}
 
       {turnWarning && !gameOver && (
