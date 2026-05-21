@@ -377,27 +377,40 @@ function SelectedComboBar({ selected, comboResult, selectedCost }) {
   );
 }
 
-function CardLibraryModal({ cards, onClose }) {
+function CardLibraryModal({ cards, rewardCards, onClose }) {
+  const [activeCategory, setActiveCategory] = useState("owned");
   const [activeFilter, setActiveFilter] = useState("전체");
-  const totalCards = cards.reduce((sum, card) => sum + (card.count || 1), 0);
-  const averageCost = cards.length
-    ? (cards.reduce((sum, card) => sum + card.cost * (card.count || 1), 0) / totalCards).toFixed(1)
+  const ownedCardMap = new Map(cards.map((card) => [card.id, card]));
+  const rewardLibraryCards = rewardCards.map((card) => {
+    const ownedCard = ownedCardMap.get(card.id);
+    return ownedCard ? { ...card, count: ownedCard.count, acquired: true } : { ...card, acquired: false };
+  });
+  const activeCards = activeCategory === "owned" ? cards : rewardLibraryCards;
+  const totalCards = activeCards.reduce((sum, card) => sum + (card.count || 1), 0);
+  const averageCost = activeCards.length
+    ? (activeCards.reduce((sum, card) => sum + card.cost * (card.count || 1), 0) / totalCards).toFixed(1)
     : "0.0";
-  const filteredCards = activeFilter === "전체" ? cards : cards.filter((card) => card.type === activeFilter);
+  const acquiredRewardCount = rewardLibraryCards.filter((card) => card.acquired).length;
+  const filteredCards = activeFilter === "전체" ? activeCards : activeCards.filter((card) => card.type === activeFilter);
 
   return (
     <div className="modal-bg">
       <div className="modal card-library-modal">
         <div className="library-header">
           <h2>내 카드</h2>
+          <div className="library-tabs">
+            <button className={activeCategory === "owned" ? "active" : ""} onClick={() => setActiveCategory("owned")}>보유 카드</button>
+            <button className={activeCategory === "rewards" ? "active" : ""} onClick={() => setActiveCategory("rewards")}>보상 카드</button>
+          </div>
         </div>
         <div className="library-layout">
           <aside className="library-sidebar">
             <div className="library-deck-title">
-              <span>{cards.some((card) => card.lineage === "animal") ? "🧬" : "🌿"}</span>
-              <strong>생물 덱</strong>
+              <span>{activeCategory === "owned" ? "🧬" : "★"}</span>
+              <strong>{activeCategory === "owned" ? "생물 덱" : "보상 목록"}</strong>
             </div>
-            <div className="library-stat"><b>{totalCards}</b><span>카드 수</span></div>
+            <div className="library-stat"><b>{totalCards}</b><span>{activeCategory === "owned" ? "카드 수" : "보상 카드"}</span></div>
+            {activeCategory === "rewards" && <div className="library-stat"><b>{acquiredRewardCount}/{rewardLibraryCards.length}</b><span>획득</span></div>}
             <div className="library-stat"><b>{averageCost}</b><span>평균 코스트</span></div>
             <div className="library-menu">
               {CARD_FILTERS.map((filter) => (
@@ -409,9 +422,10 @@ function CardLibraryModal({ cards, onClose }) {
           </aside>
           <div className="card-library">
             {filteredCards.map((card) => (
-              <div className={`library-card ${card.rarity}`} key={card.id} style={getCardStyle(card)}>
+              <div className={`library-card ${card.rarity} ${activeCategory === "rewards" && !card.acquired ? "locked-reward" : ""}`} key={card.id} style={getCardStyle(card)}>
                 <span className="library-cost">{card.cost}</span>
                 {card.count > 1 && <em>x{card.count}</em>}
+                {activeCategory === "rewards" && <span className={`reward-state ${card.acquired ? "acquired" : ""}`}>{card.acquired ? "획득" : "미획득"}</span>}
                 <CardImageSlot card={card} />
                 <div className="library-card-main">
                   <strong>{card.name}</strong>
@@ -953,8 +967,11 @@ export default function BioSpireLite() {
         .reward-card { margin-left:0; transform:none; }
         .card-library-modal { width:min(1180px, 100%); max-width:1180px; height:min(720px, calc(100dvh - 38px)); padding:22px 24px 16px; border-radius:10px; border-color:rgba(74,196,255,.38); background:linear-gradient(180deg, rgba(5,13,18,.97), rgba(3,5,7,.98)); box-shadow:0 24px 70px rgba(0,0,0,.78), inset 0 0 34px rgba(41,169,255,.08); overflow:hidden; display:flex; flex-direction:column; }
         .card-library-modal .center { flex:0 0 auto; margin-top:10px; padding-top:8px; }
-        .library-header { flex:0 0 auto; display:block; }
+        .library-header { flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px; }
         .library-header h2 { text-align:left; font-size:38px; letter-spacing:0; text-shadow:0 0 18px rgba(255,231,150,.2); }
+        .library-tabs { display:flex; align-items:center; gap:8px; padding:4px; border:1px solid rgba(81,181,255,.24); border-radius:9px; background:rgba(2,10,16,.68); }
+        .library-tabs button { min-height:34px; padding:7px 14px; border:0; border-radius:7px; background:transparent; color:#d7c89f; font-size:15px; font-weight:950; cursor:pointer; }
+        .library-tabs button.active { color:#fff7da; background:linear-gradient(180deg, rgba(20,116,184,.92), rgba(4,33,68,.92)); box-shadow:0 0 14px rgba(51,175,255,.42), inset 0 0 12px rgba(255,255,255,.08); }
         .library-menu button { min-height:38px; border:1px solid rgba(81,181,255,.24); background:rgba(2,10,16,.68); color:#d7c89f; font-size:16px; font-weight:900; cursor:pointer; }
         .library-menu button.active { color:#fff7da; border-color:rgba(130,217,255,.88); background:linear-gradient(180deg, rgba(20,116,184,.92), rgba(4,33,68,.92)); box-shadow:0 0 16px rgba(51,175,255,.55), inset 0 0 16px rgba(255,255,255,.08); }
         .library-layout { flex:1 1 auto; display:grid; grid-template-columns:230px minmax(0, 1fr); gap:18px; margin-top:16px; min-height:0; }
@@ -969,9 +986,13 @@ export default function BioSpireLite() {
         .card-library { display:grid; grid-template-columns:repeat(auto-fill, 178px); justify-content:start; align-content:start; align-items:start; gap:14px; overflow:auto; padding:2px 8px 8px 2px; }
         .library-card { position:relative; width:178px; height:258px; padding:12px; border-radius:10px; border:1px solid color-mix(in srgb, var(--card-base) 66%, #ffe796 12%); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.12)), radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--card-base) 22%, transparent), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--card-deep) 86%, #071019), #020506 88%); box-shadow:0 0 15px var(--card-glow), inset 0 0 14px rgba(255,255,255,.07); }
         .library-card.legendary { border-color:rgba(255,216,112,.88); box-shadow:0 0 18px rgba(255,207,77,.54), inset 0 0 18px rgba(255,226,128,.08); }
+        .library-card.locked-reward { filter:brightness(.48) saturate(.72); box-shadow:0 0 8px rgba(0,0,0,.54), inset 0 0 24px rgba(0,0,0,.38); }
+        .library-card.locked-reward::after { content:""; position:absolute; inset:0; border-radius:10px; background:rgba(0,0,0,.2); pointer-events:none; }
         .library-card::before { content:""; position:absolute; inset:6px; border:1px solid rgba(113,205,255,.24); border-radius:7px; pointer-events:none; }
         .library-cost { position:absolute; left:10px; top:10px; z-index:3; width:36px; height:36px; border-radius:999px; display:grid; place-items:center; background:radial-gradient(circle at 35% 25%, #c9f5ff, #1479c3 58%, #062545); border:2px solid rgba(214,246,255,.86); color:#fffdf1; font-size:22px; font-weight:950; text-shadow:0 2px 3px rgba(0,0,0,.55); }
         .library-card em { position:absolute; right:10px; top:10px; z-index:3; padding:3px 7px; border-radius:999px; background:rgba(255,233,167,.14); border:1px solid rgba(255,233,167,.28); color:#ffe9a7; font-style:normal; font-size:12px; font-weight:950; }
+        .reward-state { position:absolute; right:10px; top:10px; z-index:4; padding:3px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,233,167,.22); color:#cabd9a; font-size:12px; font-weight:950; }
+        .reward-state.acquired { background:rgba(24,104,43,.78); border-color:rgba(142,230,93,.58); color:#f0ffd9; }
         .library-card .card-art { height:124px; margin:2px 0 10px; border-radius:8px; }
         .library-card-main { min-width:0; display:grid; gap:4px; text-align:center; }
         .library-card-main strong { color:#fff7dc; font-size:18px; line-height:1.18; overflow-wrap:anywhere; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:42px; }
@@ -1277,7 +1298,7 @@ export default function BioSpireLite() {
           onClose={() => setTutorialOpen(false)}
         />
       )}
-      {cardListOpen && <CardLibraryModal cards={ownedCards} onClose={() => setCardListOpen(false)} />}
+      {cardListOpen && <CardLibraryModal cards={ownedCards} rewardCards={REWARD_CARDS} onClose={() => setCardListOpen(false)} />}
 
       {hardIntroOpen && !gameOver && (
         <div className="modal-bg"><div className="modal" style={{ maxWidth: 600, textAlign: "center" }}><h2>하드 모드 시작</h2><p className="confirm-message">처음 적 3마리를 모두 물리쳤습니다. 이제 같은 적들이 강화되어 다시 등장합니다. 적 공격력이 상승하며, 마지막 강화 보스를 잡아야 최종 승리입니다.</p><div className="center"><button className="button" onClick={() => setHardIntroOpen(false)}>하드 모드 도전</button></div></div></div>
