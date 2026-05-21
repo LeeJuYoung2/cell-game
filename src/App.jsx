@@ -1043,7 +1043,7 @@ export default function BioSpireLite() {
         .exchange-overlay { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.58); pointer-events:none; }
         .exchange-prompt { padding:18px 26px; border-radius:14px; border:2px solid #ffe58a; background:rgba(4,7,8,.9); color:#fff3bf; font-size:clamp(20px, 2.1vw, 30px); font-weight:950; text-align:center; box-shadow:0 0 28px rgba(255,229,138,.34); }
         .exchange-mode .energy-panel, .exchange-mode .cards, .exchange-mode .action-panel { position:relative; z-index:36; }
-        .exchange-mode .play-card { cursor:pointer; filter:brightness(1.28) saturate(1.14); box-shadow:0 14px 24px rgba(0,0,0,.62), 0 0 26px var(--card-glow), 0 0 18px rgba(255,229,138,.28), inset 0 0 14px rgba(255,255,255,.1); }
+        .exchange-mode .play-card { z-index:37; cursor:pointer; filter:none; }
         .toast { position:fixed; left:50%; top:30px; transform:translateX(-50%); z-index:80; background:#7a1212; color:white; padding:10px 16px; border-radius:999px; font-weight:950; box-shadow:0 14px 26px rgba(0,0,0,.5); }
         .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50; }
         .modal { width:min(800px, 100%); padding:28px; border-radius:24px; border:1px solid rgba(229,199,113,.58); background:linear-gradient(180deg, rgba(21,20,14,.96), rgba(5,5,5,.98)); box-shadow:0 24px 60px rgba(0,0,0,.72), inset 0 0 24px rgba(255,220,122,.06); }
