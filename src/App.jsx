@@ -1042,8 +1042,9 @@ export default function BioSpireLite() {
         .exchange-button.active { outline:3px solid #ffe58a; }
         .exchange-overlay { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.58); pointer-events:none; }
         .exchange-prompt { padding:18px 26px; border-radius:14px; border:2px solid #ffe58a; background:rgba(4,7,8,.9); color:#fff3bf; font-size:clamp(20px, 2.1vw, 30px); font-weight:950; text-align:center; box-shadow:0 0 28px rgba(255,229,138,.34); }
-        .exchange-mode .energy-panel, .exchange-mode .cards, .exchange-mode .action-panel { position:relative; z-index:36; }
-        .exchange-mode .play-card { z-index:37; cursor:pointer; filter:none; }
+        .exchange-mode .cards { visibility:hidden; }
+        .exchange-card-layer { position:fixed; z-index:36; left:clamp(118px, 10vw, 170px); right:clamp(136px, 13vw, 210px); bottom:30px; height:clamp(112px, 17dvh, 164px); display:flex; justify-content:center; align-items:flex-end; padding:0 4px; pointer-events:auto; }
+        .exchange-card-layer .play-card { z-index:37; cursor:pointer; filter:none; }
         .toast { position:fixed; left:50%; top:30px; transform:translateX(-50%); z-index:80; background:#7a1212; color:white; padding:10px 16px; border-radius:999px; font-weight:950; box-shadow:0 14px 26px rgba(0,0,0,.5); }
         .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50; }
         .modal { width:min(800px, 100%); padding:28px; border-radius:24px; border:1px solid rgba(229,199,113,.58); background:linear-gradient(180deg, rgba(21,20,14,.96), rgba(5,5,5,.98)); box-shadow:0 24px 60px rgba(0,0,0,.72), inset 0 0 24px rgba(255,220,122,.06); }
@@ -1179,6 +1180,7 @@ export default function BioSpireLite() {
           .enemy-side { right:11%; bottom:auto; }
           .enemy-intent { font-size:11px; padding:3px 8px; margin-top:3px; }
           .cards { height:118px; }
+          .exchange-card-layer { left:90px; right:118px; bottom:30px; height:118px; }
           .play-card { width:calc(102px * var(--card-scale, 1)); height:calc(132px * var(--card-scale, 1)); flex-basis:calc(102px * var(--card-scale, 1)); }
           .card-art { height:42px; }
           .library-card .card-art { height:104px; }
@@ -1222,6 +1224,7 @@ export default function BioSpireLite() {
           .combo-num { width:18px; height:18px; }
           .combo-summary { gap:12px; margin-top:5px; font-size:12px; }
           .cards { height:108px; margin-top:8px; justify-content:center; }
+          .exchange-card-layer { left:70px; right:98px; bottom:20px; height:108px; }
           .play-card { width:calc(72px * var(--card-scale, 1)); height:calc(106px * var(--card-scale, 1)); flex-basis:calc(72px * var(--card-scale, 1)); margin-left:calc(var(--card-overlap, 17px) * -1); border-radius:12px; padding:calc(5px * var(--card-scale, 1)); }
           .play-card:first-child { margin-left:0; }
           .card-top { gap:3px; }
@@ -1330,6 +1333,21 @@ export default function BioSpireLite() {
       {exchangeMode && !exchangeTarget && (
         <div className="exchange-overlay">
           <div className="exchange-prompt">교체할 카드를 선택하세요.</div>
+        </div>
+      )}
+      {exchangeMode && !exchangeTarget && (
+        <div className="exchange-card-layer">
+          {visibleHand.map((card, idx) => (
+            <PlayCard
+              key={`exchange-${card.uid}`}
+              card={card}
+              selected={false}
+              order={null}
+              fanIndex={idx}
+              fanTotal={visibleHand.length}
+              onClick={() => selectCard(card)}
+            />
+          ))}
         </div>
       )}
       <div className="wrap">
