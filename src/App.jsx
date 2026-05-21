@@ -19,6 +19,12 @@ const STARTER_DECK = [
   { id: "animal-organ-1", name: "위", type: "기관", lineage: "animal", rarity: "rare", cost: 2, attack: 7, block: 3, desc: "피해 7, 방어 3", image: "cards/stomach.png" },
   { id: "animal-system-1", name: "소화계", type: "기관계", lineage: "animal", rarity: "rare", cost: 2, attack: 4, block: 4, energy: 1, desc: "피해 4, 방어 4, 에너지 +1", image: "cards/digestive-system.png" },
   { id: "animal-body-1", name: "사람", type: "개체", lineage: "animal", rarity: "legendary", cost: 3, attack: 12, block: 0, desc: "피해 12", image: "cards/human-body.png" },
+  { id: "animal-cell-nerve", name: "신경세포", type: "세포", lineage: "animal", rarity: "common", cost: 1, attack: 3, block: 0, draw: 1, desc: "피해 3, 카드 1장 드로우", image: "cards/nerve-cell.png" },
+  { id: "animal-tissue-connective", name: "결합조직", type: "조직", lineage: "animal", rarity: "common", cost: 1, attack: 0, block: 7, desc: "방어 7", image: "cards/connective-tissue.png" },
+  { id: "animal-organ-small-intestine", name: "소장", type: "기관", lineage: "animal", rarity: "rare", cost: 2, attack: 8, block: 2, desc: "피해 8, 방어 2", image: "cards/small-intestine.png" },
+  { id: "animal-system-circulatory", name: "순환계", type: "기관계", lineage: "animal", rarity: "rare", cost: 2, attack: 5, block: 0, energy: 1, desc: "피해 5, 에너지 +1", image: "cards/circulatory-system.png" },
+  { id: "animal-body-enhanced-human", name: "사람 강화형", type: "개체", lineage: "animal", rarity: "legendary", cost: 3, attack: 10, block: 3, desc: "피해 10, 방어 3", image: "cards/enhanced-human.png" },
+  { id: "animal-tissue-nerve", name: "신경조직", type: "조직", lineage: "animal", rarity: "rare", cost: 1, attack: 3, block: 0, draw: 1, desc: "피해 3, 카드 1장 드로우", image: "cards/nerve-tissue.png" },
   { id: "plant-cell-1", name: "표피세포", type: "세포", lineage: "plant", rarity: "common", cost: 1, attack: 3, block: 0, desc: "피해 3", image: "cards/plant-epidermal-cell.png" },
   { id: "plant-cell-2", name: "공변세포", type: "세포", lineage: "plant", rarity: "rare", cost: 1, attack: 2, block: 0, energy: 1, desc: "피해 2, 에너지 +1", image: "cards/guard-cell.png" },
   { id: "plant-tissue-1", name: "표피조직", type: "조직", lineage: "plant", rarity: "common", cost: 1, attack: 0, block: 5, desc: "방어 5", image: "cards/plant-epidermal-tissue.png" },
@@ -26,6 +32,11 @@ const STARTER_DECK = [
   { id: "plant-system-2", name: "관다발조직계", type: "조직계", lineage: "plant", rarity: "rare", cost: 2, attack: 5, block: 3, draw: 1, desc: "피해 5, 방어 3, 카드 1장 드로우", image: "cards/vascular-bundle-system.png" },
   { id: "plant-organ-1", name: "잎", type: "기관", lineage: "plant", rarity: "rare", cost: 2, attack: 6, block: 0, desc: "피해 6", image: "cards/leaf.png" },
   { id: "plant-body-1", name: "나무", type: "개체", lineage: "plant", rarity: "legendary", cost: 3, attack: 11, block: 0, desc: "피해 11", image: "cards/tree.png" },
+  { id: "plant-cell-xylem", name: "물관세포", type: "세포", lineage: "plant", rarity: "common", cost: 1, attack: 2, block: 0, energy: 1, desc: "피해 2, 에너지 +1", image: "cards/xylem-cell.png" },
+  { id: "plant-tissue-palisade", name: "울타리조직", type: "조직", lineage: "plant", rarity: "common", cost: 1, attack: 4, block: 3, desc: "피해 4, 방어 3", image: "cards/palisade-tissue.png" },
+  { id: "plant-system-xylem", name: "물관", type: "조직계", lineage: "plant", rarity: "rare", cost: 2, attack: 5, block: 4, desc: "피해 5, 방어 4", image: "cards/xylem.png" },
+  { id: "plant-organ-flower", name: "꽃", type: "기관", lineage: "plant", rarity: "rare", cost: 2, attack: 7, block: 0, draw: 1, desc: "피해 7, 카드 1장 드로우", image: "cards/flower.png" },
+  { id: "plant-body-grass", name: "풀", type: "개체", lineage: "plant", rarity: "legendary", cost: 3, attack: 9, block: 4, desc: "피해 9, 방어 4", image: "cards/grass.png" },
 ];
 
 const REWARD_CARDS = [
@@ -33,10 +44,12 @@ const REWARD_CARDS = [
   { id: "animal-organ-heart", name: "심장", type: "기관", lineage: "animal", rarity: "rare", cost: 1, attack: 3, block: 7, desc: "피해 3, 방어 7", image: "cards/heart.png" },
   { id: "animal-system-resp", name: "호흡계", type: "기관계", lineage: "animal", rarity: "rare", cost: 2, attack: 6, block: 3, draw: 1, desc: "피해 6, 방어 3, 카드 1장 드로우", image: "cards/respiratory-system.png" },
   { id: "animal-body-human-strong", name: "강화된 사람", type: "개체", lineage: "animal", rarity: "legendary", cost: 4, attack: 18, block: 0, desc: "피해 18", image: "cards/strengthened-human.png" },
+  { id: "animal-tissue-bone", name: "뼈조직", type: "조직", lineage: "animal", rarity: "rare", cost: 2, attack: 1, block: 12, desc: "피해 1, 방어 12", image: "cards/bone-tissue.png" },
   { id: "plant-organ-root", name: "뿌리", type: "기관", lineage: "plant", rarity: "common", cost: 1, attack: 2, block: 8, desc: "피해 2, 방어 8", image: "cards/root.png" },
   { id: "plant-organ-stem", name: "줄기", type: "기관", lineage: "plant", rarity: "rare", cost: 1, attack: 5, block: 3, energy: 1, desc: "피해 5, 방어 3, 에너지 +1", image: "cards/stem.png" },
-  { id: "plant-body-flower", name: "꽃식물", type: "개체", lineage: "plant", rarity: "legendary", cost: 2, attack: 10, block: 2, desc: "피해 10, 방어 2", image: "cards/flowering-plant.png" },
+  { id: "plant-body-sunflower", name: "해바라기", type: "개체", lineage: "plant", rarity: "legendary", cost: 2, attack: 10, block: 2, desc: "피해 10, 방어 2", image: "cards/sunflower.png" },
   { id: "plant-system-vascular-plus", name: "강화 관다발조직계", type: "조직계", lineage: "plant", rarity: "legendary", cost: 3, attack: 8, block: 5, draw: 1, desc: "피해 8, 방어 5, 카드 1장 드로우", image: "cards/strengthened-vascular-bundle-system.png" },
+  { id: "plant-tissue-thick-epidermal", name: "두꺼운 표피조직", type: "조직", lineage: "plant", rarity: "rare", cost: 2, attack: 1, block: 12, desc: "피해 1, 방어 12", image: "cards/thick-epidermal-tissue.png" },
 ];
 
 const ENEMIES = [
