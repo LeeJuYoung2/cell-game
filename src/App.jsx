@@ -472,7 +472,7 @@ const TUTORIAL_STEPS = [
   {
     target: "hand",
     title: "카드 효과",
-    body: "⚔ 피해는 적의 체력을 줄이고, 🛡 방어는 공격을 막습니다. ⚡ 에너지는 사용 후 회복, 🃏 드로우는 카드를 추가로 뽑는 효과입니다.",
+    body: "⚔ 피해: 적 체력을 줄입니다. 🛡 방어: 적 공격을 막습니다. ⚡ 에너지: 사용 후 회복합니다. 🃏 드로우: 카드를 추가로 뽑습니다.",
     position: "tutorial-hand-note",
     spotlight: "spotlight-hand",
   },
@@ -1071,10 +1071,10 @@ export default function BioSpireLite() {
         .tutorial-overlay { position:fixed; inset:0; z-index:110; pointer-events:auto; }
         .tutorial-shade { position:absolute; inset:0; background:transparent; }
         .tutorial-spotlight { position:absolute; z-index:120; border:3px solid #ffe06c; border-radius:16px; background:rgba(255,239,128,.04); box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(255,224,108,.78), inset 0 0 18px rgba(255,224,108,.18); pointer-events:none; }
-        .tutorial-callout { position:absolute; z-index:130; width:clamp(230px, 23vw, 340px); padding:14px 14px 14px 42px; border-radius:12px; background:rgba(6,8,10,.94); border:2px solid #ffd45f; color:#f7edcf; box-shadow:0 0 18px rgba(0,0,0,.55); font-weight:850; }
+        .tutorial-callout { position:absolute; z-index:130; width:clamp(230px, 23vw, 340px); padding:14px 14px 14px 42px; border-radius:12px; background:rgba(6,8,10,.94); border:2px solid #ffd45f; color:#f7edcf; box-shadow:0 0 18px rgba(0,0,0,.55); font-weight:850; text-align:left; }
         .tutorial-callout b { position:absolute; left:-12px; top:-12px; width:30px; height:30px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:#ffdb69; color:#1e1503; border:2px solid rgba(255,255,255,.8); font-size:17px; font-weight:950; }
         .tutorial-callout strong { display:block; margin-bottom:5px; color:#ffe98d; font-size:15px; font-weight:950; }
-        .tutorial-callout span { display:block; color:#f2e6c9; font-size:12px; line-height:1.45; }
+        .tutorial-callout span { display:block; color:#f2e6c9; font-size:12px; line-height:1.55; text-align:left; word-break:keep-all; overflow-wrap:anywhere; }
         .tutorial-controls { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
         .tutorial-controls .button { min-height:32px; padding:6px 12px; font-size:12px; border-radius:9px; }
         .spotlight-player { left:30px; top:12px; width:410px; height:138px; }
