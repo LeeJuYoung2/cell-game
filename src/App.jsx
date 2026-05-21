@@ -2,7 +2,8 @@ import React, { useMemo, useState } from "react";
 
 const STARTING_HAND_SIZE = 5;
 const TURN_DRAW_COUNT = 3;
-const TURN_ENERGY_GAIN = 7;
+const STARTING_ENERGY = 7;
+const TURN_ENERGY_GAIN = 5;
 const MAX_ENERGY = 20;
 const MAX_HAND_SIZE = 12;
 const PLAYER_MAX_HP = 70;
@@ -486,7 +487,7 @@ const TUTORIAL_STEPS = [
   {
     target: "actions",
     title: "행동 버튼",
-    body: "카드 발동으로 공격하고, 턴 종료로 적의 공격을 받습니다. 내 카드 버튼으로 보유 카드를 확인합니다.",
+    body: "교체로 손패 1장을 바꿉니다. 첫 교체는 무료, 추가 교체는 에너지 1을 씁니다. 카드 발동으로 공격하고 턴 종료로 적 공격을 받습니다.",
     position: "tutorial-actions-note",
     spotlight: "spotlight-actions",
   },
@@ -562,6 +563,7 @@ function TutorialDemoScreen() {
         ))}
       </div>
       <div className="tutorial-demo-actions">
+        <button>교체</button>
         <button>카드 발동</button>
         <button>턴 종료</button>
         <button>내 카드</button>
@@ -622,7 +624,7 @@ export default function BioSpireLite() {
   const [discard, setDiscard] = useState(setup.discard);
   const [hand, setHand] = useState(sortCardsByRarity(setup.drawn));
   const [selected, setSelected] = useState([]);
-  const [energy, setEnergy] = useState(TURN_ENERGY_GAIN);
+  const [energy, setEnergy] = useState(STARTING_ENERGY);
   const [playerHp, setPlayerHp] = useState(PLAYER_MAX_HP);
   const [block, setBlock] = useState(0);
   const [enemyIndex, setEnemyIndex] = useState(0);
@@ -644,6 +646,9 @@ export default function BioSpireLite() {
   const [toast, setToast] = useState(null);
   const [started, setStarted] = useState(false);
   const [attackFx, setAttackFx] = useState(null);
+  const [exchangeMode, setExchangeMode] = useState(false);
+  const [exchangeTarget, setExchangeTarget] = useState(null);
+  const [freeExchangeUsed, setFreeExchangeUsed] = useState(false);
 
   const baseEnemy = ENEMIES[enemyIndex];
   const enemy = {
@@ -657,6 +662,8 @@ export default function BioSpireLite() {
   const visibleHand = hand;
   const ownedCards = summarizeCards([...hand, ...deck, ...discard]);
   const tutorialTarget = tutorialOpen ? TUTORIAL_STEPS[tutorialStep]?.target : null;
+  const exchangeCost = freeExchangeUsed ? 1 : 0;
+  const canExchange = !gameOver && !rewardMode && !tutorialOpen && !hardIntroOpen && hand.length > 0 && energy >= exchangeCost;
 
   function openTutorial() {
     setTutorialStep(0);
@@ -680,6 +687,10 @@ export default function BioSpireLite() {
 
   function selectCard(card) {
     if (gameOver || rewardMode || tutorialOpen || hardIntroOpen) return;
+    if (exchangeMode) {
+      setExchangeTarget(card);
+      return;
+    }
     if (isSelected(card)) setSelected((previous) => previous.filter((selectedCard) => selectedCard.uid !== card.uid));
     else setSelected((previous) => [...previous, card]);
   }
@@ -689,6 +700,49 @@ export default function BioSpireLite() {
     return index >= 0 ? index + 1 : null;
   }
 
+  function startExchange() {
+    if (exchangeMode) {
+      setExchangeMode(false);
+      setExchangeTarget(null);
+      return;
+    }
+    if (!canExchange) {
+      showToast(exchangeCost > 0 && energy < exchangeCost ? "에너지가 부족합니다." : "지금은 교체할 수 없습니다.");
+      return;
+    }
+    setSelected([]);
+    setExchangeTarget(null);
+    setExchangeMode(true);
+  }
+
+  function cancelExchange() {
+    setExchangeMode(false);
+    setExchangeTarget(null);
+  }
+
+  function confirmExchange() {
+    if (!exchangeTarget) return;
+    const cost = freeExchangeUsed ? 1 : 0;
+    if (energy < cost) {
+      showToast("에너지가 부족합니다.");
+      cancelExchange();
+      return;
+    }
+    const exchangeUid = exchangeTarget.uid;
+    const drawResult = drawCards(deck, discard, 1);
+    const nextHand = hand.filter((card) => card.uid !== exchangeUid);
+    const replacedHand = trimHand([...nextHand, ...drawResult.drawn]);
+    setHand(sortCardsByRarity(replacedHand));
+    setDeck(drawResult.deck);
+    setDiscard([...drawResult.discard, exchangeTarget]);
+    setEnergy((previous) => Math.max(0, previous - cost));
+    setSelected([]);
+    setExchangeMode(false);
+    setExchangeTarget(null);
+    setFreeExchangeUsed(true);
+    setLog(`${exchangeTarget.name} 카드를 교체했습니다. 카드 ${drawResult.drawn.length}장을 드로우했습니다.`);
+  }
+
   function beginHardMode(cardPool) {
     const savedPool = cardPool.map(withoutUid);
     const battleStart = startBattleFromPool(savedPool);
@@ -696,7 +750,7 @@ export default function BioSpireLite() {
     setHardModeStartPool(savedPool);
     setEnemyIndex(0);
     setEnemyHp(ENEMIES[0].hp);
-    setEnergy(TURN_ENERGY_GAIN);
+    setEnergy(STARTING_ENERGY);
     setPlayerHp(PLAYER_MAX_HP);
     setBlock(0);
     setRewardMode(false);
@@ -709,6 +763,9 @@ export default function BioSpireLite() {
     setSkipConfirm(false);
     setRestartConfirm(false);
     setCardListOpen(false);
+    setExchangeMode(false);
+    setExchangeTarget(null);
+    setFreeExchangeUsed(false);
     setHardIntroOpen(true);
     setGameOver(false);
     setWin(false);
@@ -747,6 +804,9 @@ export default function BioSpireLite() {
     setDiscard(drawResult.discard);
     setTurnWarning(null);
     setSkipConfirm(false);
+    setExchangeMode(false);
+    setExchangeTarget(null);
+    setFreeExchangeUsed(false);
     let nextLog = `${messagePrefix} 적의 공격으로 ${damage} 피해를 받았습니다. 남은 방어도는 ${nextBlock}입니다. 카드 ${drawResult.drawn.length}장을 드로우했습니다.`;
     if (lostCards > 0) nextLog += ` 손패 초과로 ${lostCards}장을 받지 못했습니다.`;
     if (lostEnergy > 0) nextLog += ` 에너지 초과로 ${lostEnergy}이 사라졌습니다.`;
@@ -819,7 +879,7 @@ export default function BioSpireLite() {
     const battleStart = startBattleFromPool(nextDeckPool);
     setEnemyIndex(nextEnemyIndex);
     setEnemyHp(ENEMIES[nextEnemyIndex].hp);
-    setEnergy(TURN_ENERGY_GAIN);
+    setEnergy(STARTING_ENERGY);
     setBlock(0);
     setRewardMode(false);
     setRewards([]);
@@ -829,6 +889,9 @@ export default function BioSpireLite() {
     setDiscard(battleStart.discard);
     setTurnWarning(null);
     setSkipConfirm(false);
+    setExchangeMode(false);
+    setExchangeTarget(null);
+    setFreeExchangeUsed(false);
     setLog(`${card.name} 카드를 덱에 추가했습니다. 다음 전투를 카드 5장으로 시작합니다.`);
   }
 
@@ -839,7 +902,7 @@ export default function BioSpireLite() {
     setDiscard(firstDraw.discard);
     setHand(sortCardsByRarity(firstDraw.drawn));
     setSelected([]);
-    setEnergy(TURN_ENERGY_GAIN);
+    setEnergy(STARTING_ENERGY);
     setPlayerHp(PLAYER_MAX_HP);
     setBlock(0);
     setEnemyIndex(0);
@@ -854,6 +917,9 @@ export default function BioSpireLite() {
     setHardIntroOpen(false);
     setHardMode(false);
     setHardModeStartPool(null);
+    setExchangeMode(false);
+    setExchangeTarget(null);
+    setFreeExchangeUsed(false);
     setRewardMode(false);
     setRewards([]);
     setGameOver(false);
@@ -863,7 +929,7 @@ export default function BioSpireLite() {
   }
 
   return (
-    <div className="game">
+    <div className={`game ${exchangeMode ? "exchange-mode" : ""}`}>
       <style>{`
         * { box-sizing: border-box; }
         html, body, #root { width:100%; height:100%; margin:0; overflow:hidden; background:#030403; }
@@ -971,6 +1037,13 @@ export default function BioSpireLite() {
         .button.secondary { background:linear-gradient(180deg, #1f2630, #07090d); }
         .button.danger { background:linear-gradient(180deg, #783434, #331010); }
         .button:disabled { opacity:.45; cursor:not-allowed; }
+        .exchange-button { align-self:center; width:clamp(58px, 6.2dvh, 76px); height:clamp(58px, 6.2dvh, 76px); min-height:0; padding:0; border-radius:999px; display:grid; place-items:center; background:radial-gradient(circle at 35% 25%, #fff1a8, #328448 56%, #0d2c17 100%); border:2px solid rgba(255,232,164,.86); color:#fff9dc; font-size:clamp(14px, 1.2vw, 17px); text-shadow:0 2px 5px rgba(0,0,0,.8); box-shadow:0 0 20px rgba(130,255,87,.35), inset 0 0 18px rgba(255,255,255,.13); }
+        .exchange-button.paid { background:radial-gradient(circle at 35% 25%, #eaf8ff, #2a8ecc 56%, #07131d 100%); box-shadow:0 0 18px rgba(77,190,255,.42), inset 0 0 18px rgba(255,255,255,.12); }
+        .exchange-button.active { outline:3px solid #ffe58a; }
+        .exchange-overlay { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.58); pointer-events:none; }
+        .exchange-prompt { padding:18px 26px; border-radius:14px; border:2px solid #ffe58a; background:rgba(4,7,8,.9); color:#fff3bf; font-size:clamp(20px, 2.1vw, 30px); font-weight:950; text-align:center; box-shadow:0 0 28px rgba(255,229,138,.34); }
+        .exchange-mode .cards, .exchange-mode .action-panel { position:relative; z-index:36; }
+        .exchange-mode .play-card { cursor:pointer; }
         .toast { position:fixed; left:50%; top:30px; transform:translateX(-50%); z-index:80; background:#7a1212; color:white; padding:10px 16px; border-radius:999px; font-weight:950; box-shadow:0 14px 26px rgba(0,0,0,.5); }
         .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50; }
         .modal { width:min(800px, 100%); padding:28px; border-radius:24px; border:1px solid rgba(229,199,113,.58); background:linear-gradient(180deg, rgba(21,20,14,.96), rgba(5,5,5,.98)); box-shadow:0 24px 60px rgba(0,0,0,.72), inset 0 0 24px rgba(255,220,122,.06); }
@@ -1065,8 +1138,9 @@ export default function BioSpireLite() {
         .tutorial-demo-card mark { position:absolute; right:-13px; top:-15px; width:34px; height:34px; border-radius:999px; display:grid; place-items:center; background:#ffe985; color:#1b1400; font-size:20px; font-weight:950; z-index:2; }
         .tutorial-demo-actions { position:absolute; z-index:4; right:34px; bottom:34px; width:225px; display:grid; gap:9px; }
         .tutorial-demo-actions button { min-height:44px; border-radius:12px; border:1px solid rgba(255,231,150,.54); color:#fff7dc; background:linear-gradient(180deg,#327331,#103816); font-size:18px; font-weight:950; }
-        .tutorial-demo-actions button:nth-child(2) { background:linear-gradient(180deg,#783434,#35100f); }
-        .tutorial-demo-actions button:nth-child(n+3) { background:linear-gradient(180deg,#202832,#07090d); }
+        .tutorial-demo-actions button:first-child { width:58px; height:58px; min-height:58px; justify-self:center; border-radius:999px; padding:0; background:radial-gradient(circle at 35% 25%, #fff1a8, #328448 56%, #0d2c17 100%); }
+        .tutorial-demo-actions button:nth-child(3) { background:linear-gradient(180deg,#783434,#35100f); }
+        .tutorial-demo-actions button:nth-child(n+4) { background:linear-gradient(180deg,#202832,#07090d); }
         .tutorial-focus { position:relative; }
         .tutorial-overlay { position:fixed; inset:0; z-index:110; pointer-events:auto; }
         .tutorial-shade { position:absolute; inset:0; background:transparent; }
@@ -1081,7 +1155,7 @@ export default function BioSpireLite() {
         .spotlight-energy { left:20px; bottom:30px; width:158px; height:220px; }
         .spotlight-hand { left:50%; bottom:0; transform:translateX(-50%); width:800px; height:220px; border-color:#6bb8ff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(91,198,255,.72), inset 0 0 18px rgba(91,198,255,.16); }
         .spotlight-combo { left:50%; bottom:258px; transform:translateX(-50%); width:760px; height:158px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
-        .spotlight-actions { right:28px; bottom:28px; width:238px; height:226px; border-color:#8ee65d; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(126,217,87,.72), inset 0 0 18px rgba(126,217,87,.16); }
+        .spotlight-actions { right:28px; bottom:28px; width:238px; height:286px; border-color:#8ee65d; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(126,217,87,.72), inset 0 0 18px rgba(126,217,87,.16); }
         .spotlight-enemy { right:42px; top:10px; width:430px; height:142px; border-color:#c87bff; box-shadow:0 0 0 9999px rgba(0,0,0,.66), 0 0 26px rgba(200,123,255,.72), inset 0 0 18px rgba(200,123,255,.16); }
         .tutorial-player-note { left:462px; top:26px; }
         .tutorial-energy-note { left:194px; bottom:116px; }
@@ -1159,6 +1233,7 @@ export default function BioSpireLite() {
           .effects { gap:3px; font-size:10px; margin-top:4px; }
           .order-badge { width:22px; height:22px; font-size:13px; top:-7px; right:-6px; }
           .action-panel { gap:6px; }
+          .exchange-button { width:52px; height:52px; font-size:12px; }
           .button { min-height:34px; padding:6px 7px; border-radius:9px; font-size:12px; }
           .modal { padding:20px 16px; border-radius:18px; }
           .modal h2 { font-size:24px; }
@@ -1194,7 +1269,7 @@ export default function BioSpireLite() {
           .spotlight-energy { left:8px; bottom:24px; width:76px; height:156px; }
           .spotlight-hand { width:min(640px, 66vw); height:124px; bottom:12px; }
           .spotlight-combo { width:min(420px, 54vw); height:84px; bottom:144px; }
-          .spotlight-actions { right:6px; bottom:18px; width:96px; height:204px; }
+          .spotlight-actions { right:6px; bottom:18px; width:96px; height:238px; }
           .tutorial-player-note { left:248px; top:10px; }
           .tutorial-enemy-note { right:248px; top:10px; }
           .tutorial-energy-note { left:92px; bottom:88px; }
@@ -1252,6 +1327,11 @@ export default function BioSpireLite() {
           </div>
         </div>
       )}
+      {exchangeMode && !exchangeTarget && (
+        <div className="exchange-overlay">
+          <div className="exchange-prompt">교체할 카드를 선택하세요.</div>
+        </div>
+      )}
       <div className="wrap">
         <section className="battle">
           <div className="rift" />
@@ -1294,9 +1374,10 @@ export default function BioSpireLite() {
             </div>
           </div>
           <div className={`action-panel ${tutorialTarget === "actions" ? "tutorial-focus" : ""}`}>
-            <button className="button" onClick={playSelectedCards} disabled={gameOver || rewardMode || tutorialOpen || hardIntroOpen}>카드 발동</button>
-            <button className="button danger" onClick={() => setSkipConfirm(true)} disabled={gameOver || rewardMode || tutorialOpen || hardIntroOpen}>턴 종료</button>
-            <button className="button secondary" onClick={() => setCardListOpen(true)} disabled={tutorialOpen || hardIntroOpen}>내 카드</button>
+            <button className={`button exchange-button ${freeExchangeUsed ? "paid" : ""} ${exchangeMode ? "active" : ""}`} title={freeExchangeUsed ? "에너지 1을 써서 카드 1장을 교체합니다." : "이번 턴 첫 교체는 무료입니다."} onClick={startExchange} disabled={!canExchange && !exchangeMode}>교체</button>
+            <button className="button" onClick={playSelectedCards} disabled={gameOver || rewardMode || tutorialOpen || hardIntroOpen || exchangeMode}>카드 발동</button>
+            <button className="button danger" onClick={() => setSkipConfirm(true)} disabled={gameOver || rewardMode || tutorialOpen || hardIntroOpen || exchangeMode}>턴 종료</button>
+            <button className="button secondary" onClick={() => setCardListOpen(true)} disabled={tutorialOpen || hardIntroOpen || exchangeMode}>내 카드</button>
             <button className="button secondary restart-button" onClick={() => setRestartConfirm(true)}>처음부터</button>
           </div>
         </section>
@@ -1328,6 +1409,10 @@ export default function BioSpireLite() {
 
       {turnWarning && !gameOver && (
         <div className="modal-bg"><div className="modal" style={{ maxWidth: 580 }}><h2>자원이 최대치를 넘습니다</h2><p className="warning-message">{turnWarning.message}</p><div className="center"><button className="button danger" onClick={() => enemyAttackAndDraw("초과를 감수하고 턴을 넘겼습니다.", true)}>그래도 종료</button><button className="button secondary" onClick={() => setTurnWarning(null)}>취소</button></div></div></div>
+      )}
+
+      {exchangeTarget && !gameOver && (
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>선택한 카드를 교체하시겠습니까?</h2><p className="confirm-message">{exchangeTarget.name} 카드를 버리고 새 카드 1장을 뽑습니다.{exchangeCost > 0 ? " 에너지 1을 소모합니다." : " 이번 턴 첫 교체는 무료입니다."}</p><div className="center"><button className="button" onClick={confirmExchange}>예</button><button className="button secondary" onClick={cancelExchange}>아니오</button></div></div></div>
       )}
 
       {restartConfirm && !gameOver && (
