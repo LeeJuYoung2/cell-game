@@ -952,7 +952,7 @@ export default function BioSpireLite() {
         .orientation-icon { font-size:52px; line-height:1; margin-bottom:16px; }
         .orientation-panel h2 { margin:0; color:#ffe9a7; font-size:26px; font-weight:950; }
         .orientation-panel p { margin:12px 0 0; color:#f0e4bf; font-size:16px; line-height:1.55; font-weight:800; }
-        .wrap { position:relative; z-index:2; width:100%; height:100%; display:grid; grid-template-rows:minmax(0, 1fr) clamp(160px, 26dvh, 230px); overflow:hidden; }
+        .wrap { position:relative; z-index:2; width:100%; height:100%; display:grid; grid-template-rows:minmax(0, 1fr) clamp(220px, 33dvh, 310px); overflow:hidden; }
         .battle { position:relative; min-height:0; overflow:hidden; }
         .rift { position:absolute; left:50%; top:0; bottom:0; width:70px; transform:translateX(-50%); background:radial-gradient(circle at 50% 44%, rgba(255,200,69,.3), transparent 15%), linear-gradient(180deg, transparent 0%, rgba(179,255,120,.45) 24%, rgba(251,211,89,.85) 50%, rgba(174,67,255,.62) 76%, transparent 100%); filter:blur(.2px); opacity:.88; }
         .rift::before { content:""; position:absolute; left:30px; top:-20px; width:6px; height:110%; background:linear-gradient(180deg, transparent, #bafc77, #ffd66d, #b83dff, transparent); box-shadow:0 0 18px #fbdf72, 0 0 34px #8b2cff; transform:rotate(4deg); }
@@ -998,7 +998,7 @@ export default function BioSpireLite() {
         .deck-mini { display:grid; gap:4px; width:100%; }
         .deck-mini span { padding:4px 8px; border-radius:8px; border:1px solid rgba(222,184,92,.28); background:rgba(0,0,0,.55); color:#e8d8aa; font-weight:900; font-size:clamp(11px, .9vw, 14px); text-align:center; }
         .hand-zone { min-width:0; align-self:end; position:relative; overflow:visible; }
-        .combo-panel { position:absolute; left:50%; bottom:185px; transform:translateX(-50%); width:max-content; min-width:min(560px, 78vw); max-width:calc(100vw - 220px); padding:7px 14px; border-radius:12px; border:1px solid rgba(239,201,98,.42); background:rgba(0,0,0,.58); backdrop-filter:blur(6px); box-shadow:0 0 18px rgba(231,189,83,.16); text-align:center; z-index:20; }
+        .combo-panel { position:absolute; left:50%; bottom:205px; transform:translateX(-50%); width:max-content; min-width:min(560px, 78vw); max-width:calc(100vw - 220px); padding:7px 14px; border-radius:12px; border:1px solid rgba(239,201,98,.42); background:rgba(0,0,0,.58); backdrop-filter:blur(6px); box-shadow:0 0 18px rgba(231,189,83,.16); text-align:center; z-index:20; }
         .combo-panel.empty { opacity:.72; }
         .combo-title { color:#ffe9a7; font-weight:950; font-size:clamp(13px, 1vw, 16px); margin-bottom:7px; }
         .combo-line { color:#d8cba2; font-size:13px; font-weight:800; }
@@ -1042,7 +1042,7 @@ export default function BioSpireLite() {
         .exchange-button.active { outline:3px solid #ffe58a; }
         .exchange-overlay { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.58); pointer-events:none; }
         .exchange-prompt { padding:18px 26px; border-radius:14px; border:2px solid #ffe58a; background:rgba(4,7,8,.9); color:#fff3bf; font-size:clamp(20px, 2.1vw, 30px); font-weight:950; text-align:center; box-shadow:0 0 28px rgba(255,229,138,.34); }
-        .exchange-mode .cards, .exchange-mode .action-panel { position:relative; z-index:36; }
+        .exchange-mode .energy-panel, .exchange-mode .cards, .exchange-mode .action-panel { position:relative; z-index:36; }
         .exchange-mode .play-card { cursor:pointer; }
         .toast { position:fixed; left:50%; top:30px; transform:translateX(-50%); z-index:80; background:#7a1212; color:white; padding:10px 16px; border-radius:999px; font-weight:950; box-shadow:0 14px 26px rgba(0,0,0,.5); }
         .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50; }
@@ -1171,7 +1171,7 @@ export default function BioSpireLite() {
         .warning-message { color:#ffb6b6; font-weight:900; }
         .center { display:flex; justify-content:center; gap:12px; margin-top:18px; }
         @media (max-height:760px), (max-width:1100px) {
-          .wrap { grid-template-rows:minmax(0, 1fr) 190px; }
+          .wrap { grid-template-rows:minmax(0, 1fr) 250px; }
           .hud { top:12px; width:300px; }
           .player-img { width:225px; height:225px; max-height:37dvh; }
           .enemy-img { width:225px; height:225px; max-height:37dvh; }
@@ -1197,7 +1197,7 @@ export default function BioSpireLite() {
           .start-rule strong { font-size:14px; margin-bottom:4px; }
           .start-rule span { font-size:13px; }
           .start-button { min-height:46px; font-size:17px; }
-          .wrap { grid-template-rows:minmax(0, 1fr) 172px; }
+          .wrap { grid-template-rows:minmax(0, 1fr) 232px; }
           .hud { top:10px; width:clamp(150px, 42vw, 220px); }
           .hud-title { font-size:15px; }
           .hud-row { grid-template-columns:18px minmax(0, 1fr) 54px; gap:5px; font-size:12px; }
@@ -1212,7 +1212,7 @@ export default function BioSpireLite() {
           .energy-number { font-size:22px; }
           .energy-label { font-size:10px; }
           .deck-mini span { padding:3px 4px; font-size:10px; }
-          .combo-panel { bottom:132px; min-width:min(320px, 78vw); max-width:calc(100vw - 16px); padding:6px 8px; }
+          .combo-panel { bottom:172px; min-width:min(320px, 78vw); max-width:calc(100vw - 16px); padding:6px 8px; }
           .combo-title { font-size:12px; margin-bottom:5px; }
           .combo-line { font-size:11px; }
           .combo-chips { gap:4px; }
@@ -1278,18 +1278,18 @@ export default function BioSpireLite() {
           .tutorial-actions-note { right:110px; bottom:88px; }
         }
         @media (max-width:1100px) and (orientation:landscape) {
-          .wrap { grid-template-rows:minmax(0, 1fr) clamp(158px, 27dvh, 190px); }
+          .wrap { grid-template-rows:minmax(0, 1fr) clamp(220px, 34dvh, 270px); }
           .fighter { --fighter-y:0px; top:auto; bottom:clamp(8px, 2dvh, 18px); }
           .enemy-side { bottom:clamp(8px, 2dvh, 18px); }
           .player-img, .enemy-img { width:clamp(104px, min(16vw, 30dvh), 178px); height:clamp(104px, min(16vw, 30dvh), 178px); max-height:30dvh; }
           .enemy-intent { margin-top:2px; }
-          .combo-panel { bottom:clamp(122px, 22dvh, 156px); }
+          .combo-panel { bottom:clamp(172px, 28dvh, 212px); }
         }
         @media (max-height:520px) and (orientation:landscape) {
           .fighter { --fighter-y:0px; top:auto; bottom:6px; }
           .enemy-side { bottom:6px; }
           .player-img, .enemy-img { width:clamp(84px, min(13vw, 22dvh), 125px); height:clamp(84px, min(13vw, 22dvh), 125px); max-height:22dvh; }
-          .combo-panel { bottom:116px; }
+          .combo-panel { bottom:158px; }
         }
         @media (max-width:1100px) and (orientation:portrait) {
           .orientation-gate { display:flex; }
