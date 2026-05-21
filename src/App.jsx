@@ -1042,7 +1042,10 @@ export default function BioSpireLite() {
         .exchange-button.active { outline:3px solid #ffe58a; }
         .exchange-overlay { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.58); pointer-events:none; }
         .exchange-prompt { padding:18px 26px; border-radius:14px; border:2px solid #ffe58a; background:rgba(4,7,8,.9); color:#fff3bf; font-size:clamp(20px, 2.1vw, 30px); font-weight:950; text-align:center; box-shadow:0 0 28px rgba(255,229,138,.34); }
-        .exchange-mode .energy-panel, .exchange-mode .cards, .exchange-mode .action-panel { position:relative; z-index:36; }
+        .exchange-mode .energy-panel, .exchange-mode .cards, .exchange-mode .action-panel { position:relative; z-index:36; filter:brightness(1.18) saturate(1.08); }
+        .exchange-mode .energy-panel { padding:10px; margin:-10px; border-radius:18px; outline:2px solid rgba(255,229,138,.92); background:rgba(255,239,128,.05); box-shadow:0 0 26px rgba(255,229,138,.58), inset 0 0 18px rgba(255,229,138,.12); }
+        .exchange-mode .cards { border:2px solid rgba(107,184,255,.92); border-radius:18px; background:rgba(91,198,255,.04); box-shadow:0 0 26px rgba(91,198,255,.58), inset 0 0 18px rgba(91,198,255,.12); }
+        .exchange-mode .action-panel { padding:8px; margin:-8px; border-radius:18px; outline:2px solid rgba(142,230,93,.88); background:rgba(126,217,87,.05); box-shadow:0 0 26px rgba(126,217,87,.5), inset 0 0 18px rgba(126,217,87,.1); }
         .exchange-mode .play-card { cursor:pointer; }
         .toast { position:fixed; left:50%; top:30px; transform:translateX(-50%); z-index:80; background:#7a1212; color:white; padding:10px 16px; border-radius:999px; font-weight:950; box-shadow:0 14px 26px rgba(0,0,0,.5); }
         .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50; }
