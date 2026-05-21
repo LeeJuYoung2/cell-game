@@ -418,7 +418,7 @@ const TUTORIAL_STEPS = [
   {
     target: "enemy",
     title: "적 정보",
-    body: "적의 체력과 다음 공격력을 확인합니다. 노말 적 3마리를 잡으면 하드 모드가 시작됩니다.",
+    body: "적의 체력을 확인합니다. 적을 모두 물리치면 다음 단계로 넘어갑니다.",
     position: "tutorial-enemy-note",
     spotlight: "spotlight-enemy",
   },
@@ -923,7 +923,7 @@ export default function BioSpireLite() {
         .tutorial-demo-player-img { left:14.5%; top:22%; width:min(270px, 21vw); height:min(270px, 34dvh); }
         .tutorial-demo-enemy-img { right:19%; top:24%; width:min(250px, 20vw); height:min(250px, 32dvh); }
         .tutorial-demo-vs { position:absolute; z-index:4; left:50%; top:35%; transform:translate(-50%, -50%); font-family:Georgia,serif; font-size:76px; font-weight:950; color:#ffd990; text-shadow:0 5px 0 #7b3107, 0 0 20px rgba(255,231,137,.55); }
-        .tutorial-demo-intent { position:absolute; z-index:4; right:16%; top:52%; padding:4px 12px; border-radius:999px; border:1px solid rgba(255,157,157,.5); background:rgba(30,7,18,.74); color:#fff5e2; font-weight:950; }
+        .tutorial-demo-intent { position:absolute; z-index:4; right:19%; top:calc(24% + min(250px, 32dvh) - 8px); width:min(250px, 20vw); box-sizing:border-box; text-align:center; padding:4px 12px; border-radius:999px; border:1px solid rgba(255,157,157,.5); background:rgba(30,7,18,.74); color:#fff5e2; font-weight:950; }
         .tutorial-demo-combo { position:absolute; z-index:4; left:50%; bottom:265px; width:min(730px, 56vw); transform:translateX(-50%); padding:14px 18px; border-radius:12px; border:1px solid rgba(255,222,104,.42); background:rgba(5,6,8,.82); color:#fff2cf; text-align:center; box-shadow:0 0 22px rgba(0,0,0,.44); font-weight:950; }
         .tutorial-demo-combo > strong { display:block; color:#ffe37b; font-size:20px; margin-bottom:10px; }
         .tutorial-demo-combo-row { display:flex; align-items:center; justify-content:center; gap:12px; }
