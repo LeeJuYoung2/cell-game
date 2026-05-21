@@ -13,30 +13,30 @@ function assetPath(path) {
 }
 
 const STARTER_DECK = [
-  { id: "animal-cell-1", name: "상피세포", type: "세포", lineage: "animal", rarity: "common", cost: 1, attack: 4, block: 0, desc: "피해 4" },
-  { id: "animal-cell-2", name: "근육세포", type: "세포", lineage: "animal", rarity: "common", cost: 1, attack: 5, block: 0, desc: "피해 5" },
-  { id: "animal-tissue-1", name: "상피조직", type: "조직", lineage: "animal", rarity: "common", cost: 1, attack: 0, block: 6, desc: "방어 6" },
-  { id: "animal-organ-1", name: "위", type: "기관", lineage: "animal", rarity: "rare", cost: 2, attack: 7, block: 3, desc: "피해 7, 방어 3" },
-  { id: "animal-system-1", name: "소화계", type: "기관계", lineage: "animal", rarity: "rare", cost: 2, attack: 4, block: 4, energy: 1, desc: "피해 4, 방어 4, 에너지 +1" },
-  { id: "animal-body-1", name: "사람", type: "개체", lineage: "animal", rarity: "legendary", cost: 3, attack: 12, block: 0, desc: "피해 12" },
-  { id: "plant-cell-1", name: "표피세포", type: "세포", lineage: "plant", rarity: "common", cost: 1, attack: 3, block: 0, desc: "피해 3" },
-  { id: "plant-cell-2", name: "공변세포", type: "세포", lineage: "plant", rarity: "rare", cost: 1, attack: 2, block: 0, energy: 1, desc: "피해 2, 에너지 +1" },
-  { id: "plant-tissue-1", name: "표피조직", type: "조직", lineage: "plant", rarity: "common", cost: 1, attack: 0, block: 5, desc: "방어 5" },
-  { id: "plant-system-1", name: "표피조직계", type: "조직계", lineage: "plant", rarity: "rare", cost: 2, attack: 4, block: 4, desc: "피해 4, 방어 4" },
-  { id: "plant-system-2", name: "관다발조직계", type: "조직계", lineage: "plant", rarity: "rare", cost: 2, attack: 5, block: 3, draw: 1, desc: "피해 5, 방어 3, 카드 1장 드로우" },
-  { id: "plant-organ-1", name: "잎", type: "기관", lineage: "plant", rarity: "rare", cost: 2, attack: 6, block: 0, desc: "피해 6" },
-  { id: "plant-body-1", name: "나무", type: "개체", lineage: "plant", rarity: "legendary", cost: 3, attack: 11, block: 0, desc: "피해 11" },
+  { id: "animal-cell-1", name: "상피세포", type: "세포", lineage: "animal", rarity: "common", cost: 1, attack: 4, block: 0, desc: "피해 4", image: "cards/epithelial-cell.png" },
+  { id: "animal-cell-2", name: "근육세포", type: "세포", lineage: "animal", rarity: "common", cost: 1, attack: 5, block: 0, desc: "피해 5", image: "cards/muscle-cell.png" },
+  { id: "animal-tissue-1", name: "상피조직", type: "조직", lineage: "animal", rarity: "common", cost: 1, attack: 0, block: 6, desc: "방어 6", image: "cards/epithelial-tissue.png" },
+  { id: "animal-organ-1", name: "위", type: "기관", lineage: "animal", rarity: "rare", cost: 2, attack: 7, block: 3, desc: "피해 7, 방어 3", image: "cards/stomach.png" },
+  { id: "animal-system-1", name: "소화계", type: "기관계", lineage: "animal", rarity: "rare", cost: 2, attack: 4, block: 4, energy: 1, desc: "피해 4, 방어 4, 에너지 +1", image: "cards/digestive-system.png" },
+  { id: "animal-body-1", name: "사람", type: "개체", lineage: "animal", rarity: "legendary", cost: 3, attack: 12, block: 0, desc: "피해 12", image: "cards/human-body.png" },
+  { id: "plant-cell-1", name: "표피세포", type: "세포", lineage: "plant", rarity: "common", cost: 1, attack: 3, block: 0, desc: "피해 3", image: "cards/plant-epidermal-cell.png" },
+  { id: "plant-cell-2", name: "공변세포", type: "세포", lineage: "plant", rarity: "rare", cost: 1, attack: 2, block: 0, energy: 1, desc: "피해 2, 에너지 +1", image: "cards/guard-cell.png" },
+  { id: "plant-tissue-1", name: "표피조직", type: "조직", lineage: "plant", rarity: "common", cost: 1, attack: 0, block: 5, desc: "방어 5", image: "cards/plant-epidermal-tissue.png" },
+  { id: "plant-system-1", name: "표피조직계", type: "조직계", lineage: "plant", rarity: "rare", cost: 2, attack: 4, block: 4, desc: "피해 4, 방어 4", image: "cards/plant-tissue-system.png" },
+  { id: "plant-system-2", name: "관다발조직계", type: "조직계", lineage: "plant", rarity: "rare", cost: 2, attack: 5, block: 3, draw: 1, desc: "피해 5, 방어 3, 카드 1장 드로우", image: "cards/vascular-bundle-system.png" },
+  { id: "plant-organ-1", name: "잎", type: "기관", lineage: "plant", rarity: "rare", cost: 2, attack: 6, block: 0, desc: "피해 6", image: "cards/leaf.png" },
+  { id: "plant-body-1", name: "나무", type: "개체", lineage: "plant", rarity: "legendary", cost: 3, attack: 11, block: 0, desc: "피해 11", image: "cards/tree.png" },
 ];
 
 const REWARD_CARDS = [
-  { id: "animal-organ-lung", name: "폐", type: "기관", lineage: "animal", rarity: "rare", cost: 2, attack: 9, block: 2, desc: "피해 9, 방어 2" },
-  { id: "animal-organ-heart", name: "심장", type: "기관", lineage: "animal", rarity: "rare", cost: 1, attack: 3, block: 7, desc: "피해 3, 방어 7" },
-  { id: "animal-system-resp", name: "호흡계", type: "기관계", lineage: "animal", rarity: "rare", cost: 2, attack: 6, block: 3, draw: 1, desc: "피해 6, 방어 3, 카드 1장 드로우" },
-  { id: "animal-body-human-strong", name: "강화된 사람", type: "개체", lineage: "animal", rarity: "legendary", cost: 4, attack: 18, block: 0, desc: "피해 18" },
-  { id: "plant-organ-root", name: "뿌리", type: "기관", lineage: "plant", rarity: "common", cost: 1, attack: 2, block: 8, desc: "피해 2, 방어 8" },
-  { id: "plant-organ-stem", name: "줄기", type: "기관", lineage: "plant", rarity: "rare", cost: 1, attack: 5, block: 3, energy: 1, desc: "피해 5, 방어 3, 에너지 +1" },
-  { id: "plant-body-flower", name: "꽃식물", type: "개체", lineage: "plant", rarity: "legendary", cost: 2, attack: 10, block: 2, desc: "피해 10, 방어 2" },
-  { id: "plant-system-vascular-plus", name: "강화 관다발조직계", type: "조직계", lineage: "plant", rarity: "legendary", cost: 3, attack: 8, block: 5, draw: 1, desc: "피해 8, 방어 5, 카드 1장 드로우" },
+  { id: "animal-organ-lung", name: "폐", type: "기관", lineage: "animal", rarity: "rare", cost: 2, attack: 9, block: 2, desc: "피해 9, 방어 2", image: "cards/lung.png" },
+  { id: "animal-organ-heart", name: "심장", type: "기관", lineage: "animal", rarity: "rare", cost: 1, attack: 3, block: 7, desc: "피해 3, 방어 7", image: "cards/heart.png" },
+  { id: "animal-system-resp", name: "호흡계", type: "기관계", lineage: "animal", rarity: "rare", cost: 2, attack: 6, block: 3, draw: 1, desc: "피해 6, 방어 3, 카드 1장 드로우", image: "cards/respiratory-system.png" },
+  { id: "animal-body-human-strong", name: "강화된 사람", type: "개체", lineage: "animal", rarity: "legendary", cost: 4, attack: 18, block: 0, desc: "피해 18", image: "cards/strengthened-human.png" },
+  { id: "plant-organ-root", name: "뿌리", type: "기관", lineage: "plant", rarity: "common", cost: 1, attack: 2, block: 8, desc: "피해 2, 방어 8", image: "cards/root.png" },
+  { id: "plant-organ-stem", name: "줄기", type: "기관", lineage: "plant", rarity: "rare", cost: 1, attack: 5, block: 3, energy: 1, desc: "피해 5, 방어 3, 에너지 +1", image: "cards/stem.png" },
+  { id: "plant-body-flower", name: "꽃식물", type: "개체", lineage: "plant", rarity: "legendary", cost: 2, attack: 10, block: 2, desc: "피해 10, 방어 2", image: "cards/flowering-plant.png" },
+  { id: "plant-system-vascular-plus", name: "강화 관다발조직계", type: "조직계", lineage: "plant", rarity: "legendary", cost: 3, attack: 8, block: 5, draw: 1, desc: "피해 8, 방어 5, 카드 1장 드로우", image: "cards/strengthened-vascular-bundle-system.png" },
 ];
 
 const ENEMIES = [
@@ -53,6 +53,7 @@ const BIO_ORDER_BY_LINEAGE = {
 const COMBO_MULTIPLIER = { 0: 1, 1: 1, 2: 1.3, 3: 1.6, 4: 2, 5: 3 };
 const MIXED_COMBO_MULTIPLIER = { 0: 1, 1: 1, 2: 1.2, 3: 1.4, 4: 1.7, 5: 2.2 };
 const LINEAGE_LABEL = { animal: "동물", plant: "식물" };
+const CARD_FILTERS = ["전체", "세포", "조직", "조직계", "기관", "기관계", "개체"];
 const RARITY_ORDER = { common: 0, rare: 1, legendary: 2 };
 const REWARD_RARITY_TABLE = [
   { rarity: "common", chance: 0.6 },
@@ -261,6 +262,13 @@ function getTurnOverflowWarning(energy, handSize) {
 
 function CardImageSlot({ card }) {
   const icon = card.lineage === "plant" ? "🌿" : "🧬";
+  if (card.image) {
+    return (
+      <div className="card-art image-art">
+        <img src={assetPath(card.image)} alt="" />
+      </div>
+    );
+  }
   return (
     <div className="card-art">
       <span>{icon}</span>
@@ -357,21 +365,49 @@ function SelectedComboBar({ selected, comboResult, selectedCost }) {
 }
 
 function CardLibraryModal({ cards, onClose }) {
+  const [activeFilter, setActiveFilter] = useState("전체");
+  const totalCards = cards.reduce((sum, card) => sum + (card.count || 1), 0);
+  const averageCost = cards.length
+    ? (cards.reduce((sum, card) => sum + card.cost * (card.count || 1), 0) / totalCards).toFixed(1)
+    : "0.0";
+  const filteredCards = activeFilter === "전체" ? cards : cards.filter((card) => card.type === activeFilter);
+
   return (
     <div className="modal-bg">
       <div className="modal card-library-modal">
-        <h2>내 카드</h2>
-        <div className="card-library">
-          {cards.map((card) => (
-            <div className="library-card" key={card.id} style={getCardStyle(card)}>
-              <div className="library-card-main">
-                <strong>{card.name}</strong>
-                <span>{LINEAGE_LABEL[card.lineage]} · {card.type}</span>
-              </div>
-              <CardEffects card={card} />
-              {card.count > 1 && <em>x{card.count}</em>}
+        <div className="library-header">
+          <h2>내 카드</h2>
+        </div>
+        <div className="library-layout">
+          <aside className="library-sidebar">
+            <div className="library-deck-title">
+              <span>{cards.some((card) => card.lineage === "animal") ? "🧬" : "🌿"}</span>
+              <strong>생물 덱</strong>
             </div>
-          ))}
+            <div className="library-stat"><b>{totalCards}</b><span>카드 수</span></div>
+            <div className="library-stat"><b>{averageCost}</b><span>평균 코스트</span></div>
+            <div className="library-menu">
+              {CARD_FILTERS.map((filter) => (
+                <button key={filter} className={activeFilter === filter ? "active" : ""} onClick={() => setActiveFilter(filter)}>
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </aside>
+          <div className="card-library">
+            {filteredCards.map((card) => (
+              <div className={`library-card ${card.rarity}`} key={card.id} style={getCardStyle(card)}>
+                <span className="library-cost">{card.cost}</span>
+                {card.count > 1 && <em>x{card.count}</em>}
+                <CardImageSlot card={card} />
+                <div className="library-card-main">
+                  <strong>{card.name}</strong>
+                  <span>{LINEAGE_LABEL[card.lineage]} · {card.type}</span>
+                </div>
+                <CardEffects card={card} />
+              </div>
+            ))}
+          </div>
         </div>
         <div className="center"><button className="button" onClick={onClose}>닫기</button></div>
       </div>
@@ -884,6 +920,9 @@ export default function BioSpireLite() {
         .card-top strong { font-size:clamp(12px, 1vw, 16px); font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 2px 5px rgba(0,0,0,.8); }
         .cost { width:clamp(23px, 2vw, 32px); height:clamp(23px, 2vw, 32px); border-radius:999px; flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; background:radial-gradient(circle, #eaf8ff, #2a8ecc 55%, #07131d 100%); border:2px solid #bfe8ff; color:white; font-size:clamp(14px, 1.25vw, 20px); font-weight:950; box-shadow:0 0 12px rgba(77,190,255,.8); }
         .card-art { height:clamp(44px, 7dvh, 76px); margin:clamp(5px, .7dvh, 8px) 0 5px; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(circle, rgba(255,255,255,.15), rgba(0,0,0,.45)); border:1px solid rgba(255,231,159,.18); }
+        .image-art { position:relative; overflow:hidden; background:#020609; border-color:rgba(91,198,255,.32); }
+        .image-art img { width:100%; height:100%; object-fit:cover; display:block; filter:saturate(1.05) contrast(1.04); }
+        .image-art::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(255,255,255,.08), transparent 36%, rgba(0,0,0,.24)); pointer-events:none; }
         .card-art span { font-size:clamp(24px, 2.3vw, 38px); line-height:1; }
         .card-art em, .card-type { font-style:normal; font-size:clamp(10px, .8vw, 12px); color:#e6d7a4; font-weight:800; }
         .effects { display:flex; gap:6px; justify-content:center; margin-top:clamp(5px, .7dvh, 8px); font-weight:950; color:#fff4c8; font-size:clamp(11px, .9vw, 14px); }
@@ -899,14 +938,33 @@ export default function BioSpireLite() {
         .modal h2 { margin:0; text-align:center; color:#ffe9a7; font-size:32px; }
         .reward-grid { display:flex; justify-content:center; gap:18px; margin-top:22px; flex-wrap:wrap; }
         .reward-card { margin-left:0; transform:none; }
-        .card-library-modal { max-width:760px; }
-        .card-library { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px; max-height:min(56dvh, 460px); overflow:auto; margin-top:20px; padding-right:4px; }
-        .library-card { display:grid; grid-template-columns:minmax(0, 1fr) auto auto; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,231,150,.28); background:linear-gradient(135deg, var(--card-deep), rgba(0,0,0,.72)); box-shadow:0 0 12px var(--card-glow); }
-        .library-card-main { min-width:0; display:grid; gap:3px; }
-        .library-card-main strong { color:#fff7dc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; }
-        .library-card-main span { color:#d7c78e; font-size:12px; font-weight:850; }
-        .library-card .effects { margin-top:0; justify-content:flex-start; white-space:nowrap; }
-        .library-card em { font-style:normal; color:#ffe9a7; font-weight:950; }
+        .card-library-modal { width:min(1180px, 100%); max-width:1180px; height:min(720px, calc(100dvh - 38px)); padding:22px 24px 16px; border-radius:10px; border-color:rgba(74,196,255,.38); background:linear-gradient(180deg, rgba(5,13,18,.97), rgba(3,5,7,.98)); box-shadow:0 24px 70px rgba(0,0,0,.78), inset 0 0 34px rgba(41,169,255,.08); overflow:hidden; display:flex; flex-direction:column; }
+        .card-library-modal .center { flex:0 0 auto; margin-top:10px; padding-top:8px; }
+        .library-header { flex:0 0 auto; display:block; }
+        .library-header h2 { text-align:left; font-size:38px; letter-spacing:0; text-shadow:0 0 18px rgba(255,231,150,.2); }
+        .library-menu button { min-height:38px; border:1px solid rgba(81,181,255,.24); background:rgba(2,10,16,.68); color:#d7c89f; font-size:16px; font-weight:900; cursor:pointer; }
+        .library-menu button.active { color:#fff7da; border-color:rgba(130,217,255,.88); background:linear-gradient(180deg, rgba(20,116,184,.92), rgba(4,33,68,.92)); box-shadow:0 0 16px rgba(51,175,255,.55), inset 0 0 16px rgba(255,255,255,.08); }
+        .library-layout { flex:1 1 auto; display:grid; grid-template-columns:230px minmax(0, 1fr); gap:18px; margin-top:16px; min-height:0; }
+        .library-sidebar { min-height:0; overflow:auto; padding:16px 14px; border:1px solid rgba(74,196,255,.26); border-radius:8px; background:linear-gradient(180deg, rgba(8,22,32,.76), rgba(2,7,10,.84)); box-shadow:inset 0 0 24px rgba(45,188,255,.06); }
+        .library-deck-title { display:flex; align-items:center; gap:10px; min-height:46px; padding:8px 10px; border:1px solid rgba(74,196,255,.22); border-radius:8px; background:rgba(0,0,0,.24); color:#fff7dc; font-size:18px; font-weight:950; }
+        .library-deck-title span { width:32px; height:32px; border-radius:999px; display:grid; place-items:center; background:rgba(12,56,104,.74); border:1px solid rgba(83,181,255,.42); }
+        .library-stat { margin-top:18px; display:grid; gap:2px; color:#d9c99b; }
+        .library-stat b { color:#f7e9ba; font-size:28px; line-height:1; }
+        .library-stat span { font-size:14px; font-weight:850; }
+        .library-menu { display:grid; gap:8px; margin-top:22px; }
+        .library-menu button { width:100%; padding:8px 12px; border-radius:7px; text-align:left; }
+        .card-library { display:grid; grid-template-columns:repeat(auto-fill, 178px); justify-content:start; align-content:start; align-items:start; gap:14px; overflow:auto; padding:2px 8px 8px 2px; }
+        .library-card { position:relative; width:178px; height:258px; padding:12px; border-radius:10px; border:1px solid color-mix(in srgb, var(--card-base) 66%, #ffe796 12%); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.12)), radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--card-base) 22%, transparent), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--card-deep) 86%, #071019), #020506 88%); box-shadow:0 0 15px var(--card-glow), inset 0 0 14px rgba(255,255,255,.07); }
+        .library-card.legendary { border-color:rgba(255,216,112,.88); box-shadow:0 0 18px rgba(255,207,77,.54), inset 0 0 18px rgba(255,226,128,.08); }
+        .library-card::before { content:""; position:absolute; inset:6px; border:1px solid rgba(113,205,255,.24); border-radius:7px; pointer-events:none; }
+        .library-cost { position:absolute; left:10px; top:10px; z-index:3; width:36px; height:36px; border-radius:999px; display:grid; place-items:center; background:radial-gradient(circle at 35% 25%, #c9f5ff, #1479c3 58%, #062545); border:2px solid rgba(214,246,255,.86); color:#fffdf1; font-size:22px; font-weight:950; text-shadow:0 2px 3px rgba(0,0,0,.55); }
+        .library-card em { position:absolute; right:10px; top:10px; z-index:3; padding:3px 7px; border-radius:999px; background:rgba(255,233,167,.14); border:1px solid rgba(255,233,167,.28); color:#ffe9a7; font-style:normal; font-size:12px; font-weight:950; }
+        .library-card .card-art { height:124px; margin:2px 0 10px; border-radius:8px; }
+        .library-card-main { min-width:0; display:grid; gap:4px; text-align:center; }
+        .library-card-main strong { color:#fff7dc; font-size:18px; line-height:1.18; overflow-wrap:anywhere; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:42px; }
+        .library-card-main span { color:#ead99a; font-size:13px; font-weight:900; }
+        .library-card .effects { margin-top:9px; justify-content:center; white-space:normal; gap:8px; line-height:1.2; }
+        .library-card .effects span { padding:0; border-radius:0; background:transparent; border:0; min-width:auto; }
         .tutorial-demo-screen { position:absolute; inset:0; z-index:111; overflow:hidden; background:#030403; }
         .tutorial-demo-screen::before { content:""; position:absolute; inset:0; background:linear-gradient(to right, rgba(0,0,0,.08), rgba(0,0,0,.33)), url('${assetPath("forest-bg.png")}'); background-size:cover; background-position:center; }
         .tutorial-demo-screen::after { content:""; position:absolute; inset:0; background:linear-gradient(to left, rgba(0,0,0,.08), rgba(0,0,0,.48)), url('${assetPath("corruption-bg.png")}'); background-size:cover; background-position:center; clip-path:polygon(51% 0,100% 0,100% 100%,45% 100%); }
@@ -1003,6 +1061,7 @@ export default function BioSpireLite() {
           .cards { height:118px; }
           .play-card { width:calc(102px * var(--card-scale, 1)); height:calc(132px * var(--card-scale, 1)); flex-basis:calc(102px * var(--card-scale, 1)); }
           .card-art { height:42px; }
+          .library-card .card-art { height:104px; }
           .effects { font-size:11px; }
           .card-top strong { font-size:12px; }
           .energy-orb { width:74px; height:74px; }
@@ -1057,7 +1116,25 @@ export default function BioSpireLite() {
           .button { min-height:34px; padding:6px 7px; border-radius:9px; font-size:12px; }
           .modal { padding:20px 16px; border-radius:18px; }
           .modal h2 { font-size:24px; }
-          .card-library { grid-template-columns:1fr; max-height:48dvh; }
+          .card-library-modal { height:min(680px, calc(100dvh - 22px)); padding:14px; border-radius:10px; }
+          .library-header h2 { font-size:30px; }
+          .card-library-modal .center { margin-top:7px; padding-top:5px; }
+          .library-layout { grid-template-columns:154px minmax(0, 1fr); gap:10px; margin-top:10px; }
+          .library-sidebar { padding:10px; }
+          .library-deck-title { min-height:38px; font-size:14px; }
+          .library-deck-title span { width:26px; height:26px; }
+          .library-stat { margin-top:10px; }
+          .library-stat b { font-size:21px; }
+          .library-stat span { font-size:11px; }
+          .library-menu { gap:5px; margin-top:12px; }
+          .library-menu button { min-height:30px; padding:5px 9px; font-size:12px; }
+          .card-library { grid-template-columns:repeat(auto-fill, 136px); gap:9px; }
+          .library-card { width:136px; height:210px; padding:9px; }
+          .library-card .card-art { height:88px; margin-bottom:8px; }
+          .library-cost { width:29px; height:29px; font-size:17px; }
+          .library-card-main strong { min-height:34px; font-size:14px; }
+          .library-card-main span { font-size:11px; }
+          .library-card .effects { gap:5px; font-size:10px; }
           .help-button { width:26px; height:26px; font-size:15px; }
           .tutorial-callout { width:170px; padding:8px 9px 8px 28px; border-width:1px; }
           .tutorial-callout b { width:24px; height:24px; font-size:13px; left:-9px; top:-9px; }
