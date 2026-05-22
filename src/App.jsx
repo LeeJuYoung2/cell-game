@@ -6,7 +6,7 @@ const STARTING_ENERGY = 7;
 const TURN_ENERGY_GAIN = 5;
 const MAX_ENERGY = 20;
 const MAX_HAND_SIZE = 12;
-const PLAYER_MAX_HP = 70;
+const PLAYER_MAX_HP = 50;
 const HARD_MODE_INTENT_MULTIPLIER = 1.5;
 
 function assetPath(path) {
@@ -521,10 +521,11 @@ function TutorialDemoScreen() {
       <div className="tutorial-demo-rift" />
       <div className="tutorial-demo-hud tutorial-demo-player">
         <strong>플레이어</strong>
-        <div><span>♥</span><i><em style={{ width: "100%" }} /></i><b>70 / 70</b></div>
+        <div><span>♥</span><i><em style={{ width: "100%" }} /></i><b>50 / 50</b></div>
         <div><span>🛡</span><i><em style={{ width: "0%" }} /></i><b>0</b></div>
       </div>
       <div className="tutorial-demo-hud tutorial-demo-enemy">
+        <span className="mode-badge tutorial-demo-mode-badge">노말</span>
         <strong>흩어진 세포 덩어리</strong>
         <div><span>♥</span><i><em style={{ width: "100%" }} /></i><b>40 / 40</b></div>
       </div>
@@ -905,6 +906,11 @@ export default function BioSpireLite() {
   function pickReward(card) {
     const rewardCard = withUid(withoutUid(card));
     const nextEnemyIndex = enemyIndex + 1;
+    if (hand.length === 0) {
+      const battleStart = startBattleFromPool(getCardPool(deck, discard, [rewardCard]));
+      advanceToNextEnemy(nextEnemyIndex, battleStart.hand, battleStart.deck, battleStart.discard, `${card.name} 카드를 카드 풀에 추가하고 다음 전투 손패 ${STARTING_HAND_SIZE}장을 드로우했습니다.`);
+      return;
+    }
     const rewardFitsHand = hand.length < MAX_HAND_SIZE;
     const nextHand = rewardFitsHand ? [...hand, rewardCard] : hand;
     const nextDeck = rewardFitsHand ? deck : [rewardCard, ...deck];
@@ -1123,6 +1129,7 @@ export default function BioSpireLite() {
         .tutorial-demo-hud em { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#e92e39,#ffb59d); }
         .tutorial-demo-player { left:58px; }
         .tutorial-demo-enemy { right:58px; text-align:right; }
+        .tutorial-demo-mode-badge { margin-bottom:8px; }
         .tutorial-demo-enemy div { grid-template-columns:24px minmax(0, 1fr) 86px; }
         .tutorial-demo-avatar { position:absolute; z-index:3; object-fit:contain; filter:drop-shadow(0 20px 18px rgba(0,0,0,.5)); pointer-events:none; }
         .tutorial-demo-player-img { left:14.5%; top:22%; width:min(270px, 21vw); height:min(270px, 34dvh); }
