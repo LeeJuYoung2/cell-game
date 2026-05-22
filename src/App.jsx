@@ -380,24 +380,29 @@ function SelectedComboBar({ selected, comboResult, selectedCost }) {
 }
 
 function CardLibraryModal({ cards, rewardCards, onClose }) {
-  const [activeCategory, setActiveCategory] = useState("owned");
   const [activeFilter, setActiveFilter] = useState("전체");
-  const ownedCardMap = new Map(cards.map((card) => [card.id, card]));
-  const rewardLibraryCards = rewardCards.map((card) => {
-    const ownedCard = ownedCardMap.get(card.id);
-    return ownedCard ? { ...card, count: ownedCard.count, acquired: true } : { ...card, acquired: false };
-  });
-  const activeCards = activeCategory === "owned" ? cards : rewardLibraryCards;
-  const totalCards = activeCards.reduce((sum, card) => sum + (card.count || 1), 0);
-  const averageCost = activeCards.length
-    ? (activeCards.reduce((sum, card) => sum + card.cost * (card.count || 1), 0) / totalCards).toFixed(1)
+  const rewardIds = new Set(rewardCards.map((card) => card.id));
+  const totalCards = cards.reduce((sum, card) => sum + (card.count || 1), 0);
+  const averageCost = cards.length
+    ? (cards.reduce((sum, card) => sum + card.cost * (card.count || 1), 0) / totalCards).toFixed(1)
     : "0.0";
-  const acquiredRewardCount = rewardLibraryCards.filter((card) => card.acquired).length;
-  const visibleFilters = activeCategory === "owned" ? CARD_FILTERS : ["전체"];
-  const filteredCards = activeFilter === "전체" ? activeCards : activeCards.filter((card) => card.type === activeFilter);
-  function changeCategory(category) {
-    setActiveCategory(category);
-    setActiveFilter("전체");
+  const acquiredRewardCards = cards.filter((card) => rewardIds.has(card.id));
+  const filteredCards = activeFilter === "전체" ? cards : cards.filter((card) => card.type === activeFilter);
+  const filteredOwnedCards = filteredCards.filter((card) => !rewardIds.has(card.id));
+  const filteredRewardCards = filteredCards.filter((card) => rewardIds.has(card.id));
+  function renderLibraryCard(card) {
+    return (
+      <div className={`library-card ${card.rarity}`} key={card.id} style={getCardStyle(card)}>
+        <span className="library-cost">{card.cost}</span>
+        {card.count > 1 && <em>x{card.count}</em>}
+        <CardImageSlot card={card} />
+        <div className="library-card-main">
+          <strong>{card.name}</strong>
+          <span>{LINEAGE_LABEL[card.lineage]} · {card.type}</span>
+        </div>
+        <CardEffects card={card} />
+      </div>
+    );
   }
 
   return (
@@ -405,22 +410,18 @@ function CardLibraryModal({ cards, rewardCards, onClose }) {
       <div className="modal card-library-modal">
         <div className="library-header">
           <h2>내 카드</h2>
-          <div className="library-tabs">
-            <button className={activeCategory === "owned" ? "active" : ""} onClick={() => changeCategory("owned")}>보유 카드</button>
-            <button className={activeCategory === "rewards" ? "active" : ""} onClick={() => changeCategory("rewards")}>보상 카드</button>
-          </div>
         </div>
         <div className="library-layout">
           <aside className="library-sidebar">
             <div className="library-deck-title">
-              <span>{activeCategory === "owned" ? "🧬" : "★"}</span>
-              <strong>{activeCategory === "owned" ? "생물 덱" : "보상 목록"}</strong>
+              <span>🧬</span>
+              <strong>생물 덱</strong>
             </div>
-            <div className="library-stat"><b>{totalCards}</b><span>{activeCategory === "owned" ? "카드 수" : "보상 카드"}</span></div>
-            {activeCategory === "rewards" && <div className="library-stat"><b>{acquiredRewardCount}/{rewardLibraryCards.length}</b><span>획득</span></div>}
+            <div className="library-stat"><b>{totalCards}</b><span>카드 수</span></div>
+            <div className="library-stat"><b>{acquiredRewardCards.length}</b><span>획득 보상</span></div>
             <div className="library-stat"><b>{averageCost}</b><span>평균 코스트</span></div>
             <div className="library-menu">
-              {visibleFilters.map((filter) => (
+              {CARD_FILTERS.map((filter) => (
                 <button key={filter} className={activeFilter === filter ? "active" : ""} onClick={() => setActiveFilter(filter)}>
                   {filter}
                 </button>
@@ -428,19 +429,22 @@ function CardLibraryModal({ cards, rewardCards, onClose }) {
             </div>
           </aside>
           <div className="card-library">
-            {filteredCards.map((card) => (
-              <div className={`library-card ${card.rarity} ${activeCategory === "rewards" && !card.acquired ? "locked-reward" : ""}`} key={card.id} style={getCardStyle(card)}>
-                <span className="library-cost">{card.cost}</span>
-                {card.count > 1 && <em>x{card.count}</em>}
-                {activeCategory === "rewards" && <span className={`reward-state ${card.acquired ? "acquired" : ""}`}>{card.acquired ? "획득" : "미획득"}</span>}
-                <CardImageSlot card={card} />
-                <div className="library-card-main">
-                  <strong>{card.name}</strong>
-                  <span>{LINEAGE_LABEL[card.lineage]} · {card.type}</span>
-                </div>
-                <CardEffects card={card} />
+            <section className="library-section">
+              <h3>보유 카드</h3>
+              <div className="library-card-grid">
+                {filteredOwnedCards.map(renderLibraryCard)}
               </div>
-            ))}
+            </section>
+            <section className="library-section reward-library-section">
+              <h3>획득한 보상 카드</h3>
+              {filteredRewardCards.length > 0 ? (
+                <div className="library-card-grid">
+                  {filteredRewardCards.map(renderLibraryCard)}
+                </div>
+              ) : (
+                <p className="library-empty">아직 획득한 보상 카드가 없습니다.</p>
+              )}
+            </section>
           </div>
         </div>
         <div className="center"><button className="button" onClick={onClose}>닫기</button></div>
@@ -575,7 +579,7 @@ function TutorialDemoScreen() {
   );
 }
 
-function TutorialModal({ step, onNext, onPrev, onClose }) {
+function TutorialModal({ step, onNext, onPrev, onClose, onMenu, replay = false }) {
   const current = TUTORIAL_STEPS[step];
   const isLast = step === TUTORIAL_STEPS.length - 1;
   return (
@@ -588,9 +592,36 @@ function TutorialModal({ step, onNext, onPrev, onClose }) {
         <strong>{current.title}</strong>
         <span>{current.body}</span>
         <div className="tutorial-controls">
-          <button className="button secondary" onClick={onPrev} disabled={step === 0}>이전</button>
-          <button className="button" onClick={isLast ? onClose : onNext}>{isLast ? "확인" : "다음"}</button>
+          {replay ? (
+            <>
+              <button className="button secondary" onClick={onMenu}>목차</button>
+              <button className="button" onClick={onClose}>닫기</button>
+            </>
+          ) : (
+            <>
+              <button className="button secondary" onClick={onPrev} disabled={step === 0}>이전</button>
+              <button className="button" onClick={isLast ? onClose : onNext}>{isLast ? "확인" : "다음"}</button>
+            </>
+          )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function HelpIndexModal({ onSelect, onClose }) {
+  return (
+    <div className="modal-bg">
+      <div className="modal help-index-modal">
+        <h2>도움말</h2>
+        <div className="help-index-list">
+          {TUTORIAL_STEPS.map((step, index) => (
+            <button className="button secondary" key={`${step.target}-${step.title}`} onClick={() => onSelect(index)}>
+              {step.title}
+            </button>
+          ))}
+        </div>
+        <div className="center"><button className="button" onClick={onClose}>닫기</button></div>
       </div>
     </div>
   );
@@ -640,8 +671,10 @@ export default function BioSpireLite() {
   const [skipConfirm, setSkipConfirm] = useState(false);
   const [restartConfirm, setRestartConfirm] = useState(false);
   const [cardListOpen, setCardListOpen] = useState(false);
+  const [helpIndexOpen, setHelpIndexOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [tutorialReplay, setTutorialReplay] = useState(false);
   const [hardIntroOpen, setHardIntroOpen] = useState(false);
   const [hardMode, setHardMode] = useState(false);
   const [hardModeStartPool, setHardModeStartPool] = useState(null);
@@ -668,8 +701,24 @@ export default function BioSpireLite() {
   const canExchange = !gameOver && !rewardMode && !tutorialOpen && !hardIntroOpen && hand.length > 0 && energy >= exchangeCost;
 
   function openTutorial() {
-    setTutorialStep(0);
+    setHelpIndexOpen(true);
+  }
+
+  function openTutorialStep(step) {
+    setTutorialStep(step);
+    setTutorialReplay(true);
+    setHelpIndexOpen(false);
     setTutorialOpen(true);
+  }
+
+  function closeTutorial() {
+    setTutorialOpen(false);
+    setTutorialReplay(false);
+  }
+
+  function returnToHelpIndex() {
+    setTutorialOpen(false);
+    setHelpIndexOpen(true);
   }
 
   function showToast(message) {
@@ -937,7 +986,9 @@ export default function BioSpireLite() {
     setSkipConfirm(false);
     setRestartConfirm(false);
     setCardListOpen(false);
+    setHelpIndexOpen(false);
     setTutorialStep(0);
+    setTutorialReplay(false);
     setTutorialOpen(showTutorial);
     setHardIntroOpen(false);
     setHardMode(false);
@@ -1076,15 +1127,15 @@ export default function BioSpireLite() {
         .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50; }
         .modal { width:min(800px, 100%); padding:28px; border-radius:24px; border:1px solid rgba(229,199,113,.58); background:linear-gradient(180deg, rgba(21,20,14,.96), rgba(5,5,5,.98)); box-shadow:0 24px 60px rgba(0,0,0,.72), inset 0 0 24px rgba(255,220,122,.06); }
         .modal h2 { margin:0; text-align:center; color:#ffe9a7; font-size:32px; }
+        .help-index-modal { width:min(620px, 100%); }
+        .help-index-list { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-top:22px; }
+        .help-index-list .button { justify-content:flex-start; text-align:left; }
         .reward-grid { display:flex; justify-content:center; gap:18px; margin-top:22px; flex-wrap:wrap; }
         .reward-card { margin-left:0; transform:none; }
         .card-library-modal { width:min(1180px, 100%); max-width:1180px; height:min(720px, calc(100dvh - 38px)); padding:22px 24px 16px; border-radius:10px; border-color:rgba(74,196,255,.38); background:linear-gradient(180deg, rgba(5,13,18,.97), rgba(3,5,7,.98)); box-shadow:0 24px 70px rgba(0,0,0,.78), inset 0 0 34px rgba(41,169,255,.08); overflow:hidden; display:flex; flex-direction:column; }
         .card-library-modal .center { flex:0 0 auto; margin-top:10px; padding-top:8px; }
         .library-header { flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px; }
         .library-header h2 { text-align:left; font-size:38px; letter-spacing:0; text-shadow:0 0 18px rgba(255,231,150,.2); }
-        .library-tabs { display:flex; align-items:center; gap:8px; padding:4px; border:1px solid rgba(81,181,255,.24); border-radius:9px; background:rgba(2,10,16,.68); }
-        .library-tabs button { min-height:34px; padding:7px 14px; border:0; border-radius:7px; background:transparent; color:#d7c89f; font-size:15px; font-weight:950; cursor:pointer; }
-        .library-tabs button.active { color:#fff7da; background:linear-gradient(180deg, rgba(20,116,184,.92), rgba(4,33,68,.92)); box-shadow:0 0 14px rgba(51,175,255,.42), inset 0 0 12px rgba(255,255,255,.08); }
         .library-menu button { min-height:38px; border:1px solid rgba(81,181,255,.24); background:rgba(2,10,16,.68); color:#d7c89f; font-size:16px; font-weight:900; cursor:pointer; }
         .library-menu button.active { color:#fff7da; border-color:rgba(130,217,255,.88); background:linear-gradient(180deg, rgba(20,116,184,.92), rgba(4,33,68,.92)); box-shadow:0 0 16px rgba(51,175,255,.55), inset 0 0 16px rgba(255,255,255,.08); }
         .library-layout { flex:1 1 auto; display:grid; grid-template-columns:230px minmax(0, 1fr); gap:18px; margin-top:16px; min-height:0; }
@@ -1102,16 +1153,17 @@ export default function BioSpireLite() {
         .library-stat span { font-size:14px; font-weight:850; }
         .library-menu { display:grid; gap:8px; margin-top:22px; }
         .library-menu button { width:100%; padding:8px 12px; border-radius:7px; text-align:left; }
-        .card-library { display:grid; grid-template-columns:repeat(auto-fill, 178px); justify-content:start; align-content:start; align-items:start; gap:14px; overflow:auto; padding:2px 8px 8px 2px; }
+        .card-library { display:grid; align-content:start; gap:20px; overflow:auto; padding:2px 8px 8px 2px; }
+        .library-section { display:grid; gap:12px; min-width:0; }
+        .library-section h3 { margin:0; text-align:left; color:#ffe9a7; font-size:20px; font-weight:950; }
+        .reward-library-section { padding-top:18px; border-top:1px solid rgba(255,231,150,.18); }
+        .library-card-grid { display:grid; grid-template-columns:repeat(auto-fill, 178px); justify-content:start; align-content:start; align-items:start; gap:14px; }
+        .library-empty { min-height:56px; display:flex; align-items:center; margin:0; padding:14px; border:1px dashed rgba(74,196,255,.24); border-radius:8px; background:rgba(2,10,16,.4); color:#d9c99b; text-align:left; font-weight:850; }
         .library-card { position:relative; width:178px; height:258px; padding:12px; border-radius:10px; border:1px solid color-mix(in srgb, var(--card-base) 66%, #ffe796 12%); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.12)), radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--card-base) 22%, transparent), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--card-deep) 86%, #071019), #020506 88%); box-shadow:0 0 15px var(--card-glow), inset 0 0 14px rgba(255,255,255,.07); }
         .library-card.legendary { border-color:rgba(255,216,112,.88); box-shadow:0 0 18px rgba(255,207,77,.54), inset 0 0 18px rgba(255,226,128,.08); }
-        .library-card.locked-reward { filter:brightness(.48) saturate(.72); box-shadow:0 0 8px rgba(0,0,0,.54), inset 0 0 24px rgba(0,0,0,.38); }
-        .library-card.locked-reward::after { content:""; position:absolute; inset:0; border-radius:10px; background:rgba(0,0,0,.2); pointer-events:none; }
         .library-card::before { content:""; position:absolute; inset:6px; border:1px solid rgba(113,205,255,.24); border-radius:7px; pointer-events:none; }
         .library-cost { position:absolute; left:10px; top:10px; z-index:3; width:36px; height:36px; border-radius:999px; display:grid; place-items:center; background:radial-gradient(circle at 35% 25%, #c9f5ff, #1479c3 58%, #062545); border:2px solid rgba(214,246,255,.86); color:#fffdf1; font-size:22px; font-weight:950; text-shadow:0 2px 3px rgba(0,0,0,.55); }
         .library-card em { position:absolute; right:10px; top:10px; z-index:3; padding:3px 7px; border-radius:999px; background:rgba(255,233,167,.14); border:1px solid rgba(255,233,167,.28); color:#ffe9a7; font-style:normal; font-size:12px; font-weight:950; }
-        .reward-state { position:absolute; right:10px; top:10px; z-index:4; padding:3px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,233,167,.22); color:#cabd9a; font-size:12px; font-weight:950; }
-        .reward-state.acquired { background:rgba(24,104,43,.78); border-color:rgba(142,230,93,.58); color:#f0ffd9; }
         .library-card .card-art { height:124px; margin:2px 0 10px; border-radius:8px; }
         .library-card-main { min-width:0; display:grid; gap:4px; text-align:center; }
         .library-card-main strong { color:#fff7dc; font-size:18px; line-height:1.18; overflow-wrap:anywhere; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:42px; }
@@ -1274,6 +1326,7 @@ export default function BioSpireLite() {
           .button { min-height:34px; padding:6px 7px; border-radius:9px; font-size:12px; }
           .modal { padding:20px 16px; border-radius:18px; }
           .modal h2 { font-size:24px; }
+          .help-index-list { grid-template-columns:1fr; gap:7px; margin-top:14px; }
           .card-library-modal { height:min(680px, calc(100dvh - 22px)); padding:14px; border-radius:10px; }
           .library-header h2 { font-size:30px; }
           .card-library-modal .center { margin-top:7px; padding-top:5px; }
@@ -1286,7 +1339,10 @@ export default function BioSpireLite() {
           .library-stat span { font-size:11px; }
           .library-menu { gap:5px; margin-top:12px; }
           .library-menu button { min-height:30px; padding:5px 9px; font-size:12px; }
-          .card-library { grid-template-columns:repeat(auto-fill, 136px); gap:9px; }
+          .card-library { gap:14px; }
+          .library-section { gap:8px; }
+          .library-section h3 { font-size:16px; }
+          .library-card-grid { grid-template-columns:repeat(auto-fill, 136px); gap:9px; }
           .library-card { width:136px; height:210px; padding:9px; }
           .library-card .card-art { height:88px; margin-bottom:8px; }
           .library-cost { width:29px; height:29px; font-size:17px; }
@@ -1441,11 +1497,12 @@ export default function BioSpireLite() {
           step={tutorialStep}
           onPrev={() => setTutorialStep((current) => Math.max(0, current - 1))}
           onNext={() => setTutorialStep((current) => Math.min(TUTORIAL_STEPS.length - 1, current + 1))}
-          onClose={() => setTutorialOpen(false)}
+          onClose={closeTutorial}
+          onMenu={returnToHelpIndex}
+          replay={tutorialReplay}
         />
       )}
-      {cardListOpen && <CardLibraryModal cards={ownedCards} rewardCards={REWARD_CARDS} onClose={() => setCardListOpen(false)} />}
-
+      {helpIndexOpen && started && <HelpIndexModal onSelect={openTutorialStep} onClose={() => setHelpIndexOpen(false)} />}
       {hardIntroOpen && !gameOver && (
         <div className="modal-bg"><div className="modal" style={{ maxWidth: 600, textAlign: "center" }}><h2>하드 모드 시작</h2><p className="confirm-message">처음 적 3마리를 모두 물리쳤습니다. 이제 같은 적들이 강화되어 다시 등장합니다. 적 공격력이 상승하며, 마지막 강화 보스를 잡아야 최종 승리입니다.</p><div className="center"><button className="button" onClick={() => setHardIntroOpen(false)}>하드 모드 도전</button></div></div></div>
       )}
@@ -1453,8 +1510,10 @@ export default function BioSpireLite() {
       {rewardMode && (
         <div className="modal-bg"><div className="modal"><h2>보상 카드 선택</h2><div className="reward-grid">
           {rewards.map((card) => <PlayCard key={card.uid} card={card} reward onClick={() => pickReward(card)} />)}
-        </div></div></div>
+        </div><div className="center"><button className="button secondary" onClick={() => setCardListOpen(true)}>내 카드</button></div></div></div>
       )}
+
+      {cardListOpen && <CardLibraryModal cards={ownedCards} rewardCards={REWARD_CARDS} onClose={() => setCardListOpen(false)} />}
 
       {skipConfirm && !gameOver && (
         <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>턴을 종료하시겠습니까?</h2><p className="confirm-message">적이 공격하고, 다음 턴에 카드 {TURN_DRAW_COUNT}장을 드로우합니다.</p><div className="center"><button className="button danger" onClick={() => enemyAttackAndDraw("턴을 넘겼습니다.")}>종료</button><button className="button secondary" onClick={() => setSkipConfirm(false)}>취소</button></div></div></div>
