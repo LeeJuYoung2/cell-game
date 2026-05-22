@@ -109,13 +109,14 @@ function getRandomRewardRarity() {
   return "common";
 }
 
-function pickWeightedRewardCards(count) {
+function pickWeightedRewardCards(count, excludedIds = new Set()) {
   const picked = [];
   const usedIds = new Set();
-  while (picked.length < count && usedIds.size < REWARD_CARDS.length) {
+  const availableRewards = REWARD_CARDS.filter((card) => !excludedIds.has(card.id));
+  while (picked.length < count && usedIds.size < availableRewards.length) {
     const rarity = getRandomRewardRarity();
-    let pool = REWARD_CARDS.filter((card) => card.rarity === rarity && !usedIds.has(card.id));
-    if (pool.length === 0) pool = REWARD_CARDS.filter((card) => !usedIds.has(card.id));
+    let pool = availableRewards.filter((card) => card.rarity === rarity && !usedIds.has(card.id));
+    if (pool.length === 0) pool = availableRewards.filter((card) => !usedIds.has(card.id));
     const chosen = pool[Math.floor(Math.random() * pool.length)];
     usedIds.add(chosen.id);
     picked.push(withUid(chosen, picked.length));
@@ -700,6 +701,30 @@ export default function BioSpireLite() {
     return index >= 0 ? index + 1 : null;
   }
 
+  function getOwnedRewardIds(...cardGroups) {
+    const rewardIds = new Set(REWARD_CARDS.map((card) => card.id));
+    return new Set(cardGroups.flat().filter((card) => rewardIds.has(card.id)).map((card) => card.id));
+  }
+
+  function advanceToNextEnemy(nextEnemyIndex, nextHand, nextDeck, nextDiscard, message) {
+    setEnemyIndex(nextEnemyIndex);
+    setEnemyHp(ENEMIES[nextEnemyIndex].hp);
+    setEnergy(STARTING_ENERGY);
+    setBlock(0);
+    setRewardMode(false);
+    setRewards([]);
+    setSelected([]);
+    setHand(sortCardsByRarity(nextHand));
+    setDeck(nextDeck);
+    setDiscard(nextDiscard);
+    setTurnWarning(null);
+    setSkipConfirm(false);
+    setExchangeMode(false);
+    setExchangeTarget(null);
+    setFreeExchangeUsed(false);
+    setLog(message);
+  }
+
   function startExchange() {
     if (exchangeMode) {
       setExchangeMode(false);
@@ -865,34 +890,28 @@ export default function BioSpireLite() {
           beginHardMode(getCardPool(nextDeck, nextDiscard, nextHand));
         }
       } else {
-        setRewards(pickWeightedRewardCards(3));
-        setRewardMode(true);
-        setLog("전투 승리! 보상 카드 1장을 선택하세요.");
+        const rewardOptions = pickWeightedRewardCards(3, getOwnedRewardIds(nextDeck, nextDiscard, nextHand));
+        if (rewardOptions.length > 0) {
+          setRewards(rewardOptions);
+          setRewardMode(true);
+          setLog("전투 승리! 보상 카드 1장을 선택하세요.");
+        } else {
+          advanceToNextEnemy(enemyIndex + 1, nextHand, nextDeck, nextDiscard, "획득 가능한 보상 카드가 없어 다음 전투로 이동합니다.");
+        }
       }
     }
   }
 
   function pickReward(card) {
-    const rewardCard = withoutUid(card);
+    const rewardCard = withUid(withoutUid(card));
     const nextEnemyIndex = enemyIndex + 1;
-    const nextDeckPool = getCardPool(deck, discard, hand, [rewardCard]);
-    const battleStart = startBattleFromPool(nextDeckPool);
-    setEnemyIndex(nextEnemyIndex);
-    setEnemyHp(ENEMIES[nextEnemyIndex].hp);
-    setEnergy(STARTING_ENERGY);
-    setBlock(0);
-    setRewardMode(false);
-    setRewards([]);
-    setSelected([]);
-    setHand(battleStart.hand);
-    setDeck(battleStart.deck);
-    setDiscard(battleStart.discard);
-    setTurnWarning(null);
-    setSkipConfirm(false);
-    setExchangeMode(false);
-    setExchangeTarget(null);
-    setFreeExchangeUsed(false);
-    setLog(`${card.name} 카드를 덱에 추가했습니다. 다음 전투를 카드 5장으로 시작합니다.`);
+    const rewardFitsHand = hand.length < MAX_HAND_SIZE;
+    const nextHand = rewardFitsHand ? [...hand, rewardCard] : hand;
+    const nextDeck = rewardFitsHand ? deck : [rewardCard, ...deck];
+    const message = rewardFitsHand
+      ? `${card.name} 카드를 손패에 추가했습니다. 현재 손패로 다음 전투를 시작합니다.`
+      : `손패가 가득 차 ${card.name} 카드를 다음 드로우 1순위로 예약했습니다.`;
+    advanceToNextEnemy(nextEnemyIndex, nextHand, nextDeck, discard, message);
   }
 
   function resetGame(showTutorial = false) {
@@ -1064,6 +1083,12 @@ export default function BioSpireLite() {
         .library-menu button.active { color:#fff7da; border-color:rgba(130,217,255,.88); background:linear-gradient(180deg, rgba(20,116,184,.92), rgba(4,33,68,.92)); box-shadow:0 0 16px rgba(51,175,255,.55), inset 0 0 16px rgba(255,255,255,.08); }
         .library-layout { flex:1 1 auto; display:grid; grid-template-columns:230px minmax(0, 1fr); gap:18px; margin-top:16px; min-height:0; }
         .library-sidebar { min-height:0; overflow:auto; padding:16px 14px; border:1px solid rgba(74,196,255,.26); border-radius:8px; background:linear-gradient(180deg, rgba(8,22,32,.76), rgba(2,7,10,.84)); box-shadow:inset 0 0 24px rgba(45,188,255,.06); }
+        .library-sidebar, .card-library { scrollbar-width:thin; scrollbar-color:rgba(92,192,255,.82) rgba(2,10,16,.72); }
+        .library-sidebar::-webkit-scrollbar, .card-library::-webkit-scrollbar { width:9px; height:9px; }
+        .library-sidebar::-webkit-scrollbar-track, .card-library::-webkit-scrollbar-track { border-radius:999px; background:linear-gradient(180deg, rgba(2,10,16,.88), rgba(9,18,24,.62)); border:1px solid rgba(74,196,255,.12); }
+        .library-sidebar::-webkit-scrollbar-thumb, .card-library::-webkit-scrollbar-thumb { border-radius:999px; border:1px solid rgba(255,226,143,.42); background:linear-gradient(180deg, rgba(255,224,138,.8), rgba(70,188,255,.92) 32%, rgba(14,82,132,.92)); box-shadow:0 0 12px rgba(74,196,255,.42), inset 0 0 8px rgba(255,255,255,.18); }
+        .library-sidebar::-webkit-scrollbar-thumb:hover, .card-library::-webkit-scrollbar-thumb:hover { background:linear-gradient(180deg, rgba(255,237,170,.94), rgba(106,210,255,.98) 34%, rgba(20,105,164,.98)); box-shadow:0 0 16px rgba(106,210,255,.62), inset 0 0 9px rgba(255,255,255,.24); }
+        .library-sidebar::-webkit-scrollbar-corner, .card-library::-webkit-scrollbar-corner { background:transparent; }
         .library-deck-title { display:flex; align-items:center; gap:10px; min-height:46px; padding:8px 10px; border:1px solid rgba(74,196,255,.22); border-radius:8px; background:rgba(0,0,0,.24); color:#fff7dc; font-size:18px; font-weight:950; }
         .library-deck-title span { width:32px; height:32px; border-radius:999px; display:grid; place-items:center; background:rgba(12,56,104,.74); border:1px solid rgba(83,181,255,.42); }
         .library-stat { margin-top:18px; display:grid; gap:2px; color:#d9c99b; }
