@@ -494,7 +494,7 @@ const TUTORIAL_STEPS = [
   {
     target: "enemy",
     title: "적 정보",
-    body: "적의 체력을 확인합니다. 적을 모두 물리치면 다음 단계로 넘어갑니다.",
+    body: "모드 배지와 적의 체력을 확인합니다. 노말을 돌파하면 하드 모드가 시작되고, 적을 모두 물리치면 다음 단계로 넘어갑니다.",
     position: "tutorial-enemy-note",
     spotlight: "spotlight-enemy",
   },
@@ -960,6 +960,8 @@ export default function BioSpireLite() {
         .hud { position:absolute; top:clamp(16px, 3dvh, 34px); z-index:7; width:clamp(290px, 27vw, 430px); display:flex; flex-direction:column; gap:6px; }
         .player-hud { left:clamp(18px, 3.2vw, 64px); align-items:flex-start; }
         .enemy-hud { right:clamp(18px, 3.2vw, 64px); align-items:flex-end; }
+        .mode-badge { display:inline-flex; align-items:center; justify-content:center; min-height:24px; padding:3px 10px; border-radius:999px; border:1px solid rgba(255,231,161,.46); background:rgba(30,90,42,.72); color:#f5ffd7; font-size:clamp(11px, .85vw, 13px); font-weight:950; line-height:1; box-shadow:0 0 12px rgba(126,217,87,.22), inset 0 0 10px rgba(255,255,255,.08); }
+        .mode-badge.hard { border-color:rgba(220,157,255,.58); background:rgba(89,25,121,.76); color:#fae7ff; box-shadow:0 0 14px rgba(200,123,255,.36), inset 0 0 10px rgba(255,255,255,.08); }
         .hud-title { font-size:clamp(16px, 1.6vw, 26px); font-weight:950; color:#fff7db; text-shadow:0 3px 6px rgba(0,0,0,.88); }
         .hud-row { display:grid; grid-template-columns:22px minmax(0, 1fr) 76px; align-items:center; gap:8px; width:100%; color:#fff7db; font-size:clamp(13px, 1.1vw, 18px); font-weight:950; text-shadow:0 2px 4px rgba(0,0,0,.85); }
         .hud-row strong { width:76px; text-align:left; white-space:nowrap; }
@@ -1359,6 +1361,7 @@ export default function BioSpireLite() {
             <BlockBar block={block} />
           </div>
           <div className={`hud enemy-hud ${tutorialTarget === "enemy" ? "tutorial-focus" : ""}`}>
+            <div className={`mode-badge ${hardMode ? "hard" : ""}`}>{hardMode ? "하드" : "노말"}</div>
             <div className="hud-title">{enemy.name}</div>
             <HpBar current={enemyHp} max={enemy.hp} align="right" />
           </div>
@@ -1433,8 +1436,12 @@ export default function BioSpireLite() {
         <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>선택한 카드를 교체하시겠습니까?</h2><p className="confirm-message">{exchangeTarget.name} 카드를 버리고 새 카드 1장을 뽑습니다.{exchangeCost > 0 ? " 에너지 1을 소모합니다." : " 이번 턴 첫 교체는 무료입니다."}</p><div className="center"><button className="button" onClick={confirmExchange}>예</button><button className="button secondary" onClick={cancelExchange}>아니오</button></div></div></div>
       )}
 
-      {restartConfirm && !gameOver && (
+      {restartConfirm && !gameOver && !hardMode && (
         <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>처음부터 다시 시작할까요?</h2><p className="confirm-message">현재 전투와 보상 진행이 초기화되고, 시작 덱을 새로 섞어 다시 시작합니다.</p><div className="center"><button className="button danger" onClick={() => resetGame(false)}>다시 시작</button><button className="button secondary" onClick={() => setRestartConfirm(false)}>취소</button></div></div></div>
+      )}
+
+      {restartConfirm && !gameOver && hardMode && (
+        <div className="modal-bg"><div className="modal" style={{ maxWidth: 620 }}><h2>어디서 다시 시작할까요?</h2><p className="confirm-message">현재 덱으로 하드 모드를 다시 시작하거나, 노말 모드 처음부터 돌아갈 수 있습니다.</p><div className="center"><button className="button" onClick={retryHardMode}>하드 모드 재시작</button><button className="button danger" onClick={() => resetGame(false)}>노말 모드 처음부터</button><button className="button secondary" onClick={() => setRestartConfirm(false)}>취소</button></div></div></div>
       )}
 
       {gameOver && hardMode && !win && (
