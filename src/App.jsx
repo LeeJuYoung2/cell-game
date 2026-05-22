@@ -1067,7 +1067,7 @@ export default function BioSpireLite() {
         .exchange-button { align-self:center; width:clamp(58px, 6.2dvh, 76px); height:clamp(58px, 6.2dvh, 76px); min-height:0; padding:0; border-radius:999px; display:grid; place-items:center; background:radial-gradient(circle at 35% 25%, #fff1a8, #328448 56%, #0d2c17 100%); border:2px solid rgba(255,232,164,.86); color:#fff9dc; font-size:clamp(14px, 1.2vw, 17px); text-shadow:0 2px 5px rgba(0,0,0,.8); box-shadow:0 0 20px rgba(130,255,87,.35), inset 0 0 18px rgba(255,255,255,.13); }
         .exchange-button.paid { background:radial-gradient(circle at 35% 25%, #eaf8ff, #2a8ecc 56%, #07131d 100%); box-shadow:0 0 18px rgba(77,190,255,.42), inset 0 0 18px rgba(255,255,255,.12); }
         .exchange-button.active { outline:3px solid #ffe58a; }
-        .exchange-overlay { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.58); pointer-events:none; }
+        .exchange-overlay { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.58); cursor:pointer; }
         .exchange-prompt { padding:18px 26px; border-radius:14px; border:2px solid #ffe58a; background:rgba(4,7,8,.9); color:#fff3bf; font-size:clamp(20px, 2.1vw, 30px); font-weight:950; text-align:center; box-shadow:0 0 28px rgba(255,229,138,.34); }
         .exchange-mode .cards { visibility:hidden; }
         .exchange-card-layer { position:fixed; z-index:36; left:clamp(118px, 10vw, 170px); right:clamp(136px, 13vw, 210px); bottom:30px; height:clamp(112px, 17dvh, 164px); display:flex; justify-content:center; align-items:flex-end; padding:0 4px; pointer-events:auto; }
@@ -1365,7 +1365,7 @@ export default function BioSpireLite() {
         </div>
       )}
       {exchangeMode && !exchangeTarget && (
-        <div className="exchange-overlay">
+        <div className="exchange-overlay" onClick={cancelExchange}>
           <div className="exchange-prompt">교체할 카드를 선택하세요.</div>
         </div>
       )}
