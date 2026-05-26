@@ -379,22 +379,41 @@ function SelectedComboBar({ selected, comboResult, selectedCost }) {
   );
 }
 
-function CardLibraryModal({ cards, rewardCards, onClose }) {
+function CardLibraryModal({ cards, rewardCards, mode = "normal", onClose }) {
+  const rewardCheckMode = mode === "rewardCheck";
+  const [activeCategory, setActiveCategory] = useState("owned");
   const [activeFilter, setActiveFilter] = useState("전체");
   const rewardIds = new Set(rewardCards.map((card) => card.id));
+  const ownedCardMap = new Map(cards.map((card) => [card.id, card]));
   const totalCards = cards.reduce((sum, card) => sum + (card.count || 1), 0);
   const averageCost = cards.length
     ? (cards.reduce((sum, card) => sum + card.cost * (card.count || 1), 0) / totalCards).toFixed(1)
     : "0.0";
   const acquiredRewardCards = cards.filter((card) => rewardIds.has(card.id));
-  const filteredCards = activeFilter === "전체" ? cards : cards.filter((card) => card.type === activeFilter);
-  const filteredOwnedCards = filteredCards.filter((card) => !rewardIds.has(card.id));
-  const filteredRewardCards = filteredCards.filter((card) => rewardIds.has(card.id));
-  function renderLibraryCard(card) {
+  const rewardLibraryCards = rewardCards.map((card) => {
+    const ownedCard = ownedCardMap.get(card.id);
+    return ownedCard ? { ...card, count: ownedCard.count || 1, acquired: true } : { ...card, acquired: false };
+  });
+  const visibleFilters = !rewardCheckMode && activeCategory === "rewards" ? ["전체"] : CARD_FILTERS;
+  const normalCards = activeCategory === "rewards" ? rewardLibraryCards : cards;
+  const filteredNormalCards = activeFilter === "전체" ? normalCards : normalCards.filter((card) => card.type === activeFilter);
+  const rewardCheckCards = activeFilter === "전체" ? cards : cards.filter((card) => card.type === activeFilter);
+  const filteredOwnedCards = rewardCheckCards.filter((card) => !rewardIds.has(card.id));
+  const filteredRewardCards = rewardCheckCards.filter((card) => rewardIds.has(card.id));
+  const statRewardCount = rewardCheckMode ? acquiredRewardCards.length : `${acquiredRewardCards.length}/${rewardLibraryCards.length}`;
+
+  function changeCategory(category) {
+    setActiveCategory(category);
+    setActiveFilter("전체");
+  }
+
+  function renderLibraryCard(card, showRewardState = false) {
+    const locked = showRewardState && !card.acquired;
     return (
-      <div className={`library-card ${card.rarity}`} key={card.id} style={getCardStyle(card)}>
+      <div className={`library-card ${card.rarity} ${locked ? "locked-reward" : ""}`} key={card.id} style={getCardStyle(card)}>
         <span className="library-cost">{card.cost}</span>
         {card.count > 1 && <em>x{card.count}</em>}
+        {showRewardState && <span className={`reward-state ${card.acquired ? "acquired" : ""}`}>{card.acquired ? "획득" : "미획득"}</span>}
         <CardImageSlot card={card} />
         <div className="library-card-main">
           <strong>{card.name}</strong>
@@ -410,18 +429,24 @@ function CardLibraryModal({ cards, rewardCards, onClose }) {
       <div className="modal card-library-modal">
         <div className="library-header">
           <h2>내 카드</h2>
+          {!rewardCheckMode && (
+            <div className="library-tabs">
+              <button className={activeCategory === "owned" ? "active" : ""} onClick={() => changeCategory("owned")}>보유 카드</button>
+              <button className={activeCategory === "rewards" ? "active" : ""} onClick={() => changeCategory("rewards")}>보상 카드</button>
+            </div>
+          )}
         </div>
         <div className="library-layout">
           <aside className="library-sidebar">
             <div className="library-deck-title">
               <span>🧬</span>
-              <strong>생물 덱</strong>
+              <strong>{rewardCheckMode || activeCategory === "owned" ? "생물 덱" : "보상 목록"}</strong>
             </div>
             <div className="library-stat"><b>{totalCards}</b><span>카드 수</span></div>
-            <div className="library-stat"><b>{acquiredRewardCards.length}</b><span>획득 보상</span></div>
+            <div className="library-stat"><b>{statRewardCount}</b><span>{rewardCheckMode ? "획득 보상" : "보상 카드"}</span></div>
             <div className="library-stat"><b>{averageCost}</b><span>평균 코스트</span></div>
             <div className="library-menu">
-              {CARD_FILTERS.map((filter) => (
+              {visibleFilters.map((filter) => (
                 <button key={filter} className={activeFilter === filter ? "active" : ""} onClick={() => setActiveFilter(filter)}>
                   {filter}
                 </button>
@@ -429,22 +454,33 @@ function CardLibraryModal({ cards, rewardCards, onClose }) {
             </div>
           </aside>
           <div className="card-library">
-            <section className="library-section">
-              <h3>보유 카드</h3>
-              <div className="library-card-grid">
-                {filteredOwnedCards.map(renderLibraryCard)}
-              </div>
-            </section>
-            <section className="library-section reward-library-section">
-              <h3>획득한 보상 카드</h3>
-              {filteredRewardCards.length > 0 ? (
+            {rewardCheckMode ? (
+              <>
+                <section className="library-section">
+                  <h3>보유 카드</h3>
+                  <div className="library-card-grid">
+                    {filteredOwnedCards.map((card) => renderLibraryCard(card))}
+                  </div>
+                </section>
+                <section className="library-section reward-library-section">
+                  <h3>획득한 보상 카드</h3>
+                  {filteredRewardCards.length > 0 ? (
+                    <div className="library-card-grid">
+                      {filteredRewardCards.map((card) => renderLibraryCard(card))}
+                    </div>
+                  ) : (
+                    <p className="library-empty">아직 획득한 보상 카드가 없습니다.</p>
+                  )}
+                </section>
+              </>
+            ) : (
+              <section className="library-section">
+                <h3>{activeCategory === "owned" ? "보유 카드" : "보상 카드"}</h3>
                 <div className="library-card-grid">
-                  {filteredRewardCards.map(renderLibraryCard)}
+                  {filteredNormalCards.map((card) => renderLibraryCard(card, activeCategory === "rewards"))}
                 </div>
-              ) : (
-                <p className="library-empty">아직 획득한 보상 카드가 없습니다.</p>
-              )}
-            </section>
+              </section>
+            )}
           </div>
         </div>
         <div className="center"><button className="button" onClick={onClose}>닫기</button></div>
@@ -452,7 +488,6 @@ function CardLibraryModal({ cards, rewardCards, onClose }) {
     </div>
   );
 }
-
 const TUTORIAL_STEPS = [
   {
     target: "player",
@@ -671,6 +706,7 @@ export default function BioSpireLite() {
   const [skipConfirm, setSkipConfirm] = useState(false);
   const [restartConfirm, setRestartConfirm] = useState(false);
   const [cardListOpen, setCardListOpen] = useState(false);
+  const [cardListMode, setCardListMode] = useState("normal");
   const [helpIndexOpen, setHelpIndexOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
@@ -1136,6 +1172,9 @@ export default function BioSpireLite() {
         .card-library-modal .center { flex:0 0 auto; margin-top:10px; padding-top:8px; }
         .library-header { flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px; }
         .library-header h2 { text-align:left; font-size:38px; letter-spacing:0; text-shadow:0 0 18px rgba(255,231,150,.2); }
+        .library-tabs { display:flex; align-items:center; gap:8px; padding:4px; border:1px solid rgba(74,196,255,.28); border-radius:999px; background:rgba(2,10,16,.68); }
+        .library-tabs button { min-width:112px; min-height:38px; padding:7px 14px; border-radius:999px; border:1px solid transparent; background:transparent; color:#d7c89f; font-size:15px; font-weight:950; cursor:pointer; }
+        .library-tabs button.active { color:#fff7da; border-color:rgba(130,217,255,.78); background:linear-gradient(180deg, rgba(20,116,184,.92), rgba(4,33,68,.92)); box-shadow:0 0 14px rgba(51,175,255,.45), inset 0 0 14px rgba(255,255,255,.08); }
         .library-menu button { min-height:38px; border:1px solid rgba(81,181,255,.24); background:rgba(2,10,16,.68); color:#d7c89f; font-size:16px; font-weight:900; cursor:pointer; }
         .library-menu button.active { color:#fff7da; border-color:rgba(130,217,255,.88); background:linear-gradient(180deg, rgba(20,116,184,.92), rgba(4,33,68,.92)); box-shadow:0 0 16px rgba(51,175,255,.55), inset 0 0 16px rgba(255,255,255,.08); }
         .library-layout { flex:1 1 auto; display:grid; grid-template-columns:230px minmax(0, 1fr); gap:18px; margin-top:16px; min-height:0; }
@@ -1161,6 +1200,10 @@ export default function BioSpireLite() {
         .library-empty { min-height:56px; display:flex; align-items:center; margin:0; padding:14px; border:1px dashed rgba(74,196,255,.24); border-radius:8px; background:rgba(2,10,16,.4); color:#d9c99b; text-align:left; font-weight:850; }
         .library-card { position:relative; width:178px; height:258px; padding:12px; border-radius:10px; border:1px solid color-mix(in srgb, var(--card-base) 66%, #ffe796 12%); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.12)), radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--card-base) 22%, transparent), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--card-deep) 86%, #071019), #020506 88%); box-shadow:0 0 15px var(--card-glow), inset 0 0 14px rgba(255,255,255,.07); }
         .library-card.legendary { border-color:rgba(255,216,112,.88); box-shadow:0 0 18px rgba(255,207,77,.54), inset 0 0 18px rgba(255,226,128,.08); }
+        .library-card.locked-reward { filter:brightness(.55) saturate(.72); box-shadow:0 0 10px rgba(0,0,0,.52), inset 0 0 18px rgba(0,0,0,.32); }
+        .library-card.locked-reward .card-art { opacity:.68; }
+        .reward-state { position:absolute; right:10px; top:10px; z-index:4; padding:3px 8px; border-radius:999px; border:1px solid rgba(255,233,167,.24); background:rgba(0,0,0,.56); color:#b9b0a0; font-size:12px; font-weight:950; }
+        .reward-state.acquired { color:#fff1bc; border-color:rgba(255,233,167,.48); background:rgba(88,62,8,.66); }
         .library-card::before { content:""; position:absolute; inset:6px; border:1px solid rgba(113,205,255,.24); border-radius:7px; pointer-events:none; }
         .library-cost { position:absolute; left:10px; top:10px; z-index:3; width:36px; height:36px; border-radius:999px; display:grid; place-items:center; background:radial-gradient(circle at 35% 25%, #c9f5ff, #1479c3 58%, #062545); border:2px solid rgba(214,246,255,.86); color:#fffdf1; font-size:22px; font-weight:950; text-shadow:0 2px 3px rgba(0,0,0,.55); }
         .library-card em { position:absolute; right:10px; top:10px; z-index:3; padding:3px 7px; border-radius:999px; background:rgba(255,233,167,.14); border:1px solid rgba(255,233,167,.28); color:#ffe9a7; font-style:normal; font-size:12px; font-weight:950; }
@@ -1329,6 +1372,8 @@ export default function BioSpireLite() {
           .help-index-list { grid-template-columns:1fr; gap:7px; margin-top:14px; }
           .card-library-modal { height:min(680px, calc(100dvh - 22px)); padding:14px; border-radius:10px; }
           .library-header h2 { font-size:30px; }
+          .library-tabs { gap:5px; padding:3px; }
+          .library-tabs button { min-width:84px; min-height:30px; padding:5px 9px; font-size:12px; }
           .card-library-modal .center { margin-top:7px; padding-top:5px; }
           .library-layout { grid-template-columns:154px minmax(0, 1fr); gap:10px; margin-top:10px; }
           .library-sidebar { padding:10px; }
@@ -1486,7 +1531,7 @@ export default function BioSpireLite() {
             <button className={`button exchange-button ${freeExchangeUsed ? "paid" : ""} ${exchangeMode ? "active" : ""}`} title={freeExchangeUsed ? "에너지 1을 써서 카드 1장을 교체합니다." : "이번 턴 첫 교체는 무료입니다."} onClick={startExchange} disabled={!canExchange && !exchangeMode}>교체</button>
             <button className="button" onClick={playSelectedCards} disabled={gameOver || rewardMode || tutorialOpen || hardIntroOpen || exchangeMode}>카드 발동</button>
             <button className="button danger" onClick={() => setSkipConfirm(true)} disabled={gameOver || rewardMode || tutorialOpen || hardIntroOpen || exchangeMode}>턴 종료</button>
-            <button className="button secondary" onClick={() => setCardListOpen(true)} disabled={tutorialOpen || hardIntroOpen || exchangeMode}>내 카드</button>
+            <button className="button secondary" onClick={() => { setCardListMode("normal"); setCardListOpen(true); }} disabled={tutorialOpen || hardIntroOpen || exchangeMode}>내 카드</button>
             <button className="button secondary restart-button" onClick={() => setRestartConfirm(true)}>처음부터</button>
           </div>
         </section>
@@ -1510,10 +1555,10 @@ export default function BioSpireLite() {
       {rewardMode && (
         <div className="modal-bg"><div className="modal"><h2>보상 카드 선택</h2><div className="reward-grid">
           {rewards.map((card) => <PlayCard key={card.uid} card={card} reward onClick={() => pickReward(card)} />)}
-        </div><div className="center"><button className="button secondary" onClick={() => setCardListOpen(true)}>내 카드</button></div></div></div>
+        </div><div className="center"><button className="button secondary" onClick={() => { setCardListMode("rewardCheck"); setCardListOpen(true); }}>내 카드</button></div></div></div>
       )}
 
-      {cardListOpen && <CardLibraryModal cards={ownedCards} rewardCards={REWARD_CARDS} onClose={() => setCardListOpen(false)} />}
+      {cardListOpen && <CardLibraryModal cards={ownedCards} rewardCards={REWARD_CARDS} mode={cardListMode} onClose={() => setCardListOpen(false)} />}
 
       {skipConfirm && !gameOver && (
         <div className="modal-bg"><div className="modal" style={{ maxWidth: 560 }}><h2>턴을 종료하시겠습니까?</h2><p className="confirm-message">적이 공격하고, 다음 턴에 카드 {TURN_DRAW_COUNT}장을 드로우합니다.</p><div className="center"><button className="button danger" onClick={() => enemyAttackAndDraw("턴을 넘겼습니다.")}>종료</button><button className="button secondary" onClick={() => setSkipConfirm(false)}>취소</button></div></div></div>
@@ -1545,3 +1590,4 @@ export default function BioSpireLite() {
     </div>
   );
 }
+
